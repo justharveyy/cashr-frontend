@@ -26,9 +26,9 @@ export function middleware(request: NextRequest) {
   // ── Authenticated ──────────────────────────────────────────────────────────
   if (token) {
     // Redirect away from basic public/auth pages
-    if (isPublicRoute && !verificationRoutes.includes(pathname)) {
-      return NextResponse.redirect(new URL("/transactions", request.url));
-    }
+    // if (isPublicRoute && !verificationRoutes.includes(pathname)) {
+    //   return NextResponse.redirect(new URL("/transactions", request.url));
+    // }
 
     // Enforce verification gate on all protected (non-public, non-verification) routes
     if (!isPublicRoute) {
