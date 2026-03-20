@@ -6,19 +6,56 @@ import { useRouter } from "next/navigation";
 
 export default function SignupPage() {
   const router = useRouter();
+  const [fullname, setFullname] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+    setError("");
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/auth/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          fullname,
+          phone_number: phoneNumber,
+          password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || "Registration failed");
+      }
+      // Store token used for both auth and resending OTP
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+        document.cookie = `token=${data.token}; path=/; max-age=86400`;
+        // Since it's sign up, they are freshly unverified by default unless specified
+        document.cookie = `phone_verified=${!data.phone_verification_required}; path=/; max-age=86400`;
+        document.cookie = `kyc_verified=false; path=/; max-age=86400`;
+      }
+      // Handle KYC connection and Phone OTP requirement
+      if (data.kyc_link) {
+        localStorage.setItem("kyc_link", data.kyc_link);
+        document.cookie = `kyc_link=${data.kyc_link}; path=/; max-age=86400`;
+      }
+
       router.push("/transactions");
-    }, 1500);
+    } catch (err: any) {
+      setError(err.message || "An error occurred during registration");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -45,7 +82,32 @@ export default function SignupPage() {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
+          {error && (
+            <div className="p-3 bg-red-500/10 border border-red-500/50 rounded-xl text-red-500 text-sm font-medium text-center">
+              {error}
+            </div>
+          )}
           <div className="space-y-5">
+            {/* Fullname Input */}
+            <div>
+              <label className="block text-sm font-medium text-on-surface mb-1.5 ml-1">
+                Full Name
+              </label>
+              <div className="relative group">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-outline-variant group-focus-within:text-primary transition-colors">
+                  <span className="material-symbols-outlined text-[20px]">person</span>
+                </div>
+                <input
+                  type="text"
+                  required
+                  value={fullname}
+                  onChange={(e) => setFullname(e.target.value)}
+                  className="w-full pl-11 pr-4 py-3.5 bg-surface-container-lowest border border-outline-variant rounded-xl text-on-surface placeholder:text-outline-variant focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-300 shadow-sm"
+                  placeholder="John Doe"
+                />
+              </div>
+            </div>
+
             {/* Phone Number Input */}
             <div>
               <label className="block text-sm font-medium text-on-surface mb-1.5 ml-1">
@@ -105,7 +167,7 @@ export default function SignupPage() {
             className="group relative w-full flex justify-center py-3.5 px-4 border border-transparent text-sm font-semibold rounded-xl text-on-primary bg-primary hover:bg-primary-container focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-300 shadow-md shadow-primary/20 overflow-hidden"
           >
             <span className="absolute w-0 h-0 transition-all duration-500 ease-out bg-white rounded-full group-hover:w-full group-hover:h-56 opacity-10"></span>
-            
+
             <div className="flex items-center space-x-2">
               {isLoading ? (
                 <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>

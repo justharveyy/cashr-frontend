@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 const navItems = [
   { href: "/", icon: "dashboard", label: "Dashboard" },
@@ -14,6 +14,19 @@ const navItems = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLogout = () => {
+    // Clear localStorage
+    localStorage.removeItem("token");
+    localStorage.removeItem("kyc_link");
+    
+    // Clear cookie
+    document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    
+    // Redirect to login
+    router.push("/login");
+  };
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-[280px] z-50 bg-white border-r border-slate-200 flex flex-col py-6 px-4 tracking-tight">
@@ -73,6 +86,15 @@ export default function Sidebar() {
           </span>
           <span>Support</span>
         </a>
+        <button 
+          onClick={handleLogout}
+          className="w-full flex items-center space-x-3 px-4 py-2 text-red-500 hover:bg-red-50 hover:text-red-600 transition-colors text-sm cursor-pointer rounded-xl mt-2"
+        >
+          <span className="material-symbols-outlined text-[20px]">
+            logout
+          </span>
+          <span>Logout</span>
+        </button>
       </div>
     </aside>
   );

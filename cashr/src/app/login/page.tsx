@@ -10,15 +10,63 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
+    setError("");
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          phone_number: phoneNumber,
+          password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || "Login failed");
+      }
+
+      // Store token
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+        document.cookie = `token=${data.token}; path=/; max-age=86400`;
+        document.cookie = `phone_verified=${data.phone_verified}; path=/; max-age=86400`;
+        document.cookie = `kyc_verified=${data.kyc_verified}; path=/; max-age=86400`;
+        
+        // Push localstorage kyc_link to cookie if available
+        const localKyc = localStorage.getItem("kyc_link");
+        if (localKyc) {
+            document.cookie = `kyc_link=${localKyc}; path=/; max-age=86400`;
+        }
+      }
+
+      if (data.phone_verified === false) {
+        console.log("Phone not verified");
+        router.push("/otp?init=resend");
+      } else if (data.kyc_verified === false) {
+        const kycLink = localStorage.getItem("kyc_link");
+        if (kycLink) {
+          window.location.href = kycLink;
+        } else {
+          router.push("/transactions");
+        }
+      } else {
+        router.push("/transactions");
+      }
+    } catch (err: any) {
+      setError(err.message || "An error occurred during login");
+    } finally {
       setIsLoading(false);
-      router.push("/transactions");
-    }, 1500);
+    }
   };
 
   return (
@@ -43,6 +91,11 @@ export default function LoginPage() {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
+          {error && (
+            <div className="p-3 bg-red-500/10 border border-red-500/50 rounded-xl text-red-500 text-sm font-medium text-center">
+              {error}
+            </div>
+          )}
           <div className="space-y-5">
             {/* Phone Number Input */}
             <div>
@@ -109,7 +162,7 @@ export default function LoginPage() {
             className="group relative w-full flex justify-center py-3.5 px-4 border border-transparent text-sm font-semibold rounded-xl text-on-primary bg-primary hover:bg-primary-container focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-300 shadow-md shadow-primary/20 overflow-hidden"
           >
             <span className="absolute w-0 h-0 transition-all duration-500 ease-out bg-white rounded-full group-hover:w-full group-hover:h-56 opacity-10"></span>
-            
+
             <div className="flex items-center space-x-2">
               {isLoading ? (
                 <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
