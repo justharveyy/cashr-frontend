@@ -7,7 +7,7 @@ export default function ProductsPage() {
       price: "32.990.000₫",
       stock: 24,
       status: "In Stock",
-      statusClass: "bg-emerald-100 text-emerald-700",
+      statusClass: "bg-emerald-50 text-emerald-700",
       category: "Electronics",
       icon: "smartphone",
     },
@@ -18,7 +18,7 @@ export default function ProductsPage() {
       price: "4.500.000₫",
       stock: 8,
       status: "Low Stock",
-      statusClass: "bg-tertiary-fixed text-on-tertiary-fixed-variant",
+      statusClass: "bg-amber-50 text-amber-700",
       category: "Furniture",
       icon: "chair",
     },
@@ -29,7 +29,7 @@ export default function ProductsPage() {
       price: "28.400.000₫",
       stock: 15,
       status: "In Stock",
-      statusClass: "bg-emerald-100 text-emerald-700",
+      statusClass: "bg-emerald-50 text-emerald-700",
       category: "Electronics",
       icon: "laptop_mac",
     },
@@ -40,7 +40,7 @@ export default function ProductsPage() {
       price: "1.250.000₫",
       stock: 42,
       status: "In Stock",
-      statusClass: "bg-emerald-100 text-emerald-700",
+      statusClass: "bg-emerald-50 text-emerald-700",
       category: "Electronics",
       icon: "headphones",
     },
@@ -51,7 +51,7 @@ export default function ProductsPage() {
       price: "680.000₫",
       stock: 0,
       status: "Out of Stock",
-      statusClass: "bg-tertiary-container/10 text-tertiary",
+      statusClass: "bg-red-50 text-red-700",
       category: "Home & Decor",
       icon: "local_cafe",
     },
@@ -62,7 +62,7 @@ export default function ProductsPage() {
       price: "2.800.000₫",
       stock: 12,
       status: "In Stock",
-      statusClass: "bg-emerald-100 text-emerald-700",
+      statusClass: "bg-emerald-50 text-emerald-700",
       category: "Fashion",
       icon: "apparel",
     },
@@ -71,32 +71,32 @@ export default function ProductsPage() {
   return (
     <>
       {/* Header */}
-      <section className="mb-12">
-        <div className="flex justify-between items-end mb-8">
+      <section className="mb-8">
+        <div className="flex justify-between items-end mb-6">
           <div>
-            <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-slate-400 mb-2 block">
+            <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">
               Inventory Management
-            </span>
-            <h2 className="text-4xl font-extrabold text-primary tracking-tight">
+            </p>
+            <h2 className="text-2xl font-bold text-on-surface">
               Products & Stock
             </h2>
           </div>
-          <div className="flex gap-4">
-            <button className="flex items-center gap-2 px-5 py-2.5 bg-surface-container-lowest text-on-surface-variant font-semibold rounded-lg shadow-sm border border-outline-variant/15 hover:bg-slate-50 transition-all active:scale-95">
+          <div className="flex gap-3">
+            <button className="flex items-center gap-2 px-4 py-2 bg-white text-slate-600 font-medium rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors text-sm">
               <span className="material-symbols-outlined text-lg">
                 filter_list
               </span>
-              <span className="text-sm">Filter</span>
+              Filter
             </button>
-            <button className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white font-semibold rounded-lg shadow-md hover:bg-primary-container transition-all active:scale-95">
+            <button className="flex items-center gap-2 px-4 py-2 bg-primary text-white font-medium rounded-lg hover:bg-primary-container transition-colors text-sm">
               <span className="material-symbols-outlined text-lg">add</span>
-              <span className="text-sm">Add Product</span>
+              Add Product
             </button>
           </div>
         </div>
 
         {/* Stats Row */}
-        <div className="grid grid-cols-4 gap-6">
+        <div className="grid grid-cols-4 gap-4">
           {[
             {
               label: "Total Products",
@@ -120,12 +120,12 @@ export default function ProductsPage() {
               label: "Out of Stock",
               value: "17",
               icon: "error",
-              color: "text-tertiary",
+              color: "text-red-600",
             },
           ].map((stat) => (
             <div
               key={stat.label}
-              className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/10 shadow-sm"
+              className="bg-white p-5 rounded-lg border border-slate-200"
             >
               <div className="flex items-center gap-3 mb-3">
                 <span
@@ -133,11 +133,11 @@ export default function ProductsPage() {
                 >
                   {stat.icon}
                 </span>
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">
                   {stat.label}
                 </span>
               </div>
-              <p className="text-3xl font-extrabold text-on-surface">
+              <p className="text-2xl font-bold text-on-surface">
                 {stat.value}
               </p>
             </div>
@@ -146,25 +146,25 @@ export default function ProductsPage() {
       </section>
 
       {/* Search */}
-      <section className="bg-surface-container-low p-5 rounded-xl flex items-center gap-4 mb-8">
+      <section className="bg-white p-4 rounded-lg flex items-center gap-3 mb-6 border border-slate-200">
         <div className="relative flex-grow max-w-sm">
           <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
             search
           </span>
           <input
-            className="w-full bg-surface-container-lowest border-none rounded-lg pl-10 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400 outline-none"
+            className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary/30 placeholder:text-slate-400 outline-none"
             placeholder="Search product name, SKU..."
             type="text"
           />
         </div>
-        <select className="bg-surface-container-lowest border-none rounded-lg px-4 py-2.5 text-sm font-medium focus:ring-2 focus:ring-primary/20 min-w-[140px] outline-none">
+        <select className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium focus:ring-2 focus:ring-primary/20 min-w-[120px] outline-none">
           <option>All Categories</option>
           <option>Electronics</option>
           <option>Fashion</option>
           <option>Home & Decor</option>
           <option>Furniture</option>
         </select>
-        <select className="bg-surface-container-lowest border-none rounded-lg px-4 py-2.5 text-sm font-medium focus:ring-2 focus:ring-primary/20 min-w-[140px] outline-none">
+        <select className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium focus:ring-2 focus:ring-primary/20 min-w-[120px] outline-none">
           <option>All Status</option>
           <option>In Stock</option>
           <option>Low Stock</option>
@@ -173,63 +173,63 @@ export default function ProductsPage() {
       </section>
 
       {/* Product Table */}
-      <section className="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden border border-outline-variant/10">
+      <section className="bg-white rounded-lg overflow-hidden border border-slate-200">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-surface-container-low text-slate-500 text-[11px] font-bold uppercase tracking-widest">
-                <th className="px-6 py-4">Product</th>
-                <th className="px-6 py-4">SKU</th>
-                <th className="px-6 py-4">Category</th>
-                <th className="px-6 py-4">Stock</th>
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4 text-right">Price</th>
-                <th className="px-6 py-4" />
+              <tr className="border-b border-slate-100 text-slate-400 text-[11px] font-semibold uppercase tracking-wider">
+                <th className="px-5 py-3">Product</th>
+                <th className="px-5 py-3">SKU</th>
+                <th className="px-5 py-3">Category</th>
+                <th className="px-5 py-3">Stock</th>
+                <th className="px-5 py-3">Status</th>
+                <th className="px-5 py-3 text-right">Price</th>
+                <th className="px-5 py-3" />
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
               {products.map((product) => (
                 <tr
                   key={product.id}
-                  className="hover:bg-slate-50 transition-colors cursor-pointer group"
+                  className="hover:bg-slate-50 transition-colors cursor-pointer"
                 >
-                  <td className="px-6 py-5">
+                  <td className="px-5 py-3.5">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center text-primary">
-                        <span className="material-symbols-outlined">
+                      <div className="w-9 h-9 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-500">
+                        <span className="material-symbols-outlined text-lg">
                           {product.icon}
                         </span>
                       </div>
                       <div>
-                        <p className="text-sm font-bold">{product.name}</p>
+                        <p className="text-sm font-medium">{product.name}</p>
                         <p className="text-[10px] text-slate-400">
                           {product.id}
                         </p>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-5 font-mono text-xs text-slate-600">
+                  <td className="px-5 py-3.5 font-mono text-xs text-slate-500">
                     {product.sku}
                   </td>
-                  <td className="px-6 py-5 text-sm text-slate-600">
+                  <td className="px-5 py-3.5 text-sm text-slate-500">
                     {product.category}
                   </td>
-                  <td className="px-6 py-5 font-bold text-sm">
+                  <td className="px-5 py-3.5 font-medium text-sm">
                     {product.stock}
                   </td>
-                  <td className="px-6 py-5">
+                  <td className="px-5 py-3.5">
                     <span
-                      className={`${product.statusClass} px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider`}
+                      className={`${product.statusClass} px-2 py-0.5 rounded text-[10px] font-semibold`}
                     >
                       {product.status}
                     </span>
                   </td>
-                  <td className="px-6 py-5 text-right font-bold text-slate-900 tracking-tight">
+                  <td className="px-5 py-3.5 text-right font-medium text-sm text-on-surface">
                     {product.price}
                   </td>
-                  <td className="px-6 py-5 text-right">
-                    <button className="text-slate-400 hover:text-primary transition-colors">
-                      <span className="material-symbols-outlined">
+                  <td className="px-5 py-3.5 text-right">
+                    <button className="text-slate-300 hover:text-slate-500 transition-colors">
+                      <span className="material-symbols-outlined text-xl">
                         more_vert
                       </span>
                     </button>
@@ -239,27 +239,27 @@ export default function ProductsPage() {
             </tbody>
           </table>
         </div>
-        <div className="px-6 py-4 bg-surface-container-low flex justify-between items-center text-xs font-medium text-slate-500">
+        <div className="px-5 py-3 border-t border-slate-100 flex justify-between items-center text-xs text-slate-400">
           <div>Showing 6 of 248 products</div>
-          <div className="flex gap-2">
+          <div className="flex gap-1">
             <button
-              className="px-3 py-1.5 bg-surface-container-lowest border border-outline-variant/20 rounded opacity-50"
+              className="px-2.5 py-1 border border-slate-200 rounded text-slate-300"
               disabled
             >
               <span className="material-symbols-outlined text-sm">
                 chevron_left
               </span>
             </button>
-            <button className="px-3 py-1.5 bg-primary text-on-primary rounded">
+            <button className="px-2.5 py-1 bg-primary text-white rounded text-xs font-medium">
               1
             </button>
-            <button className="px-3 py-1.5 bg-surface-container-lowest border border-outline-variant/20 rounded hover:bg-white">
+            <button className="px-2.5 py-1 border border-slate-200 rounded hover:bg-slate-50">
               2
             </button>
-            <button className="px-3 py-1.5 bg-surface-container-lowest border border-outline-variant/20 rounded hover:bg-white">
+            <button className="px-2.5 py-1 border border-slate-200 rounded hover:bg-slate-50">
               3
             </button>
-            <button className="px-3 py-1.5 bg-surface-container-lowest border border-outline-variant/20 rounded hover:bg-white">
+            <button className="px-2.5 py-1 border border-slate-200 rounded hover:bg-slate-50">
               <span className="material-symbols-outlined text-sm">
                 chevron_right
               </span>

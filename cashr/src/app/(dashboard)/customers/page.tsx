@@ -9,7 +9,7 @@ export default function CustomersPage() {
       orders: 12,
       totalSpend: "14.200.000₫",
       status: "Verified",
-      statusClass: "bg-emerald-100 text-emerald-700",
+      statusClass: "bg-emerald-50 text-emerald-700",
       lastOrder: "Mar 21, 2026",
     },
     {
@@ -21,7 +21,7 @@ export default function CustomersPage() {
       orders: 8,
       totalSpend: "8.500.000₫",
       status: "Verified",
-      statusClass: "bg-emerald-100 text-emerald-700",
+      statusClass: "bg-emerald-50 text-emerald-700",
       lastOrder: "Mar 20, 2026",
     },
     {
@@ -33,7 +33,7 @@ export default function CustomersPage() {
       orders: 24,
       totalSpend: "42.800.000₫",
       status: "VIP",
-      statusClass: "bg-primary-fixed text-primary",
+      statusClass: "bg-blue-50 text-blue-700",
       lastOrder: "Mar 21, 2026",
     },
     {
@@ -45,7 +45,7 @@ export default function CustomersPage() {
       orders: 3,
       totalSpend: "2.100.000₫",
       status: "New",
-      statusClass: "bg-secondary-fixed text-on-secondary-fixed",
+      statusClass: "bg-slate-100 text-slate-600",
       lastOrder: "Mar 19, 2026",
     },
     {
@@ -57,7 +57,7 @@ export default function CustomersPage() {
       orders: 6,
       totalSpend: "5.400.000₫",
       status: "Verified",
-      statusClass: "bg-emerald-100 text-emerald-700",
+      statusClass: "bg-emerald-50 text-emerald-700",
       lastOrder: "Mar 18, 2026",
     },
     {
@@ -69,7 +69,7 @@ export default function CustomersPage() {
       orders: 1,
       totalSpend: "450.000₫",
       status: "Pending KYC",
-      statusClass: "bg-amber-100 text-amber-700",
+      statusClass: "bg-amber-50 text-amber-700",
       lastOrder: "Mar 17, 2026",
     },
   ];
@@ -77,34 +77,34 @@ export default function CustomersPage() {
   return (
     <>
       {/* Header */}
-      <section className="mb-12">
-        <div className="flex justify-between items-end mb-8">
+      <section className="mb-8">
+        <div className="flex justify-between items-end mb-6">
           <div>
-            <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-slate-400 mb-2 block">
+            <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">
               Customer Relationship
-            </span>
-            <h2 className="text-4xl font-extrabold text-primary tracking-tight">
+            </p>
+            <h2 className="text-2xl font-bold text-on-surface">
               Customers
             </h2>
           </div>
-          <div className="flex gap-4">
-            <button className="flex items-center gap-2 px-5 py-2.5 bg-surface-container-lowest text-on-surface-variant font-semibold rounded-lg shadow-sm border border-outline-variant/15 hover:bg-slate-50 transition-all active:scale-95">
+          <div className="flex gap-3">
+            <button className="flex items-center gap-2 px-4 py-2 bg-white text-slate-600 font-medium rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors text-sm">
               <span className="material-symbols-outlined text-lg">
                 download
               </span>
-              <span className="text-sm">Export</span>
+              Export
             </button>
-            <button className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white font-semibold rounded-lg shadow-md hover:bg-primary-container transition-all active:scale-95">
+            <button className="flex items-center gap-2 px-4 py-2 bg-primary text-white font-medium rounded-lg hover:bg-primary-container transition-colors text-sm">
               <span className="material-symbols-outlined text-lg">
                 person_add
               </span>
-              <span className="text-sm">Add Customer</span>
+              Add Customer
             </button>
           </div>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-4 gap-6">
+        <div className="grid grid-cols-4 gap-4">
           {[
             {
               label: "Total Customers",
@@ -128,12 +128,12 @@ export default function CustomersPage() {
               label: "New This Month",
               value: "64",
               icon: "person_add",
-              color: "text-secondary",
+              color: "text-blue-600",
             },
           ].map((stat) => (
             <div
               key={stat.label}
-              className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/10 shadow-sm"
+              className="bg-white p-5 rounded-lg border border-slate-200"
             >
               <div className="flex items-center gap-3 mb-3">
                 <span
@@ -141,11 +141,11 @@ export default function CustomersPage() {
                 >
                   {stat.icon}
                 </span>
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">
                   {stat.label}
                 </span>
               </div>
-              <p className="text-3xl font-extrabold text-on-surface">
+              <p className="text-2xl font-bold text-on-surface">
                 {stat.value}
               </p>
             </div>
@@ -154,18 +154,18 @@ export default function CustomersPage() {
       </section>
 
       {/* Search */}
-      <section className="bg-surface-container-low p-5 rounded-xl flex items-center gap-4 mb-8">
+      <section className="bg-white p-4 rounded-lg flex items-center gap-3 mb-6 border border-slate-200">
         <div className="relative flex-grow max-w-sm">
           <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
             search
           </span>
           <input
-            className="w-full bg-surface-container-lowest border-none rounded-lg pl-10 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400 outline-none"
+            className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary/30 placeholder:text-slate-400 outline-none"
             placeholder="Search customer name, phone, email..."
             type="text"
           />
         </div>
-        <select className="bg-surface-container-lowest border-none rounded-lg px-4 py-2.5 text-sm font-medium focus:ring-2 focus:ring-primary/20 min-w-[140px] outline-none">
+        <select className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium focus:ring-2 focus:ring-primary/20 min-w-[120px] outline-none">
           <option>All Status</option>
           <option>Verified</option>
           <option>VIP</option>
@@ -175,18 +175,18 @@ export default function CustomersPage() {
       </section>
 
       {/* Customer Table */}
-      <section className="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden border border-outline-variant/10">
+      <section className="bg-white rounded-lg overflow-hidden border border-slate-200">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-surface-container-low text-slate-500 text-[11px] font-bold uppercase tracking-widest">
-                <th className="px-6 py-4">Customer</th>
-                <th className="px-6 py-4">Phone</th>
-                <th className="px-6 py-4">Orders</th>
-                <th className="px-6 py-4">Total Spend</th>
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4">Last Order</th>
-                <th className="px-6 py-4" />
+              <tr className="border-b border-slate-100 text-slate-400 text-[11px] font-semibold uppercase tracking-wider">
+                <th className="px-5 py-3">Customer</th>
+                <th className="px-5 py-3">Phone</th>
+                <th className="px-5 py-3">Orders</th>
+                <th className="px-5 py-3">Total Spend</th>
+                <th className="px-5 py-3">Status</th>
+                <th className="px-5 py-3">Last Order</th>
+                <th className="px-5 py-3" />
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
@@ -195,37 +195,37 @@ export default function CustomersPage() {
                   key={c.id}
                   className="hover:bg-slate-50 transition-colors cursor-pointer"
                 >
-                  <td className="px-6 py-5">
+                  <td className="px-5 py-3.5">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center text-xs font-bold text-primary">
+                      <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-semibold text-slate-500">
                         {c.initials}
                       </div>
                       <div>
-                        <p className="text-sm font-bold">{c.name}</p>
+                        <p className="text-sm font-medium">{c.name}</p>
                         <p className="text-[10px] text-slate-400">{c.email}</p>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-5 text-sm text-slate-600">
+                  <td className="px-5 py-3.5 text-sm text-slate-500">
                     {c.phone}
                   </td>
-                  <td className="px-6 py-5 font-bold text-sm">{c.orders}</td>
-                  <td className="px-6 py-5 font-bold text-sm text-on-surface">
+                  <td className="px-5 py-3.5 font-medium text-sm">{c.orders}</td>
+                  <td className="px-5 py-3.5 font-medium text-sm text-on-surface">
                     {c.totalSpend}
                   </td>
-                  <td className="px-6 py-5">
+                  <td className="px-5 py-3.5">
                     <span
-                      className={`${c.statusClass} px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider`}
+                      className={`${c.statusClass} px-2 py-0.5 rounded text-[10px] font-semibold`}
                     >
                       {c.status}
                     </span>
                   </td>
-                  <td className="px-6 py-5 text-sm text-slate-600">
+                  <td className="px-5 py-3.5 text-sm text-slate-500">
                     {c.lastOrder}
                   </td>
-                  <td className="px-6 py-5 text-right">
-                    <button className="text-slate-400 hover:text-primary transition-colors">
-                      <span className="material-symbols-outlined">
+                  <td className="px-5 py-3.5 text-right">
+                    <button className="text-slate-300 hover:text-slate-500 transition-colors">
+                      <span className="material-symbols-outlined text-xl">
                         more_vert
                       </span>
                     </button>
@@ -235,27 +235,27 @@ export default function CustomersPage() {
             </tbody>
           </table>
         </div>
-        <div className="px-6 py-4 bg-surface-container-low flex justify-between items-center text-xs font-medium text-slate-500">
+        <div className="px-5 py-3 border-t border-slate-100 flex justify-between items-center text-xs text-slate-400">
           <div>Showing 6 of 1,842 customers</div>
-          <div className="flex gap-2">
+          <div className="flex gap-1">
             <button
-              className="px-3 py-1.5 bg-surface-container-lowest border border-outline-variant/20 rounded opacity-50"
+              className="px-2.5 py-1 border border-slate-200 rounded text-slate-300"
               disabled
             >
               <span className="material-symbols-outlined text-sm">
                 chevron_left
               </span>
             </button>
-            <button className="px-3 py-1.5 bg-primary text-on-primary rounded">
+            <button className="px-2.5 py-1 bg-primary text-white rounded text-xs font-medium">
               1
             </button>
-            <button className="px-3 py-1.5 bg-surface-container-lowest border border-outline-variant/20 rounded hover:bg-white">
+            <button className="px-2.5 py-1 border border-slate-200 rounded hover:bg-slate-50">
               2
             </button>
-            <button className="px-3 py-1.5 bg-surface-container-lowest border border-outline-variant/20 rounded hover:bg-white">
+            <button className="px-2.5 py-1 border border-slate-200 rounded hover:bg-slate-50">
               3
             </button>
-            <button className="px-3 py-1.5 bg-surface-container-lowest border border-outline-variant/20 rounded hover:bg-white">
+            <button className="px-2.5 py-1 border border-slate-200 rounded hover:bg-slate-50">
               <span className="material-symbols-outlined text-sm">
                 chevron_right
               </span>
