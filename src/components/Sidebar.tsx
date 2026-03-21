@@ -51,34 +51,47 @@ export default function Sidebar() {
 
       {/* Store Switcher */}
       <div className="mb-4 px-1">
-        {isLoading ? (
-          <div className="h-10 bg-slate-100 rounded-lg animate-pulse" />
-        ) : stores.length === 0 ? (
+        <div className="flex items-center gap-2">
           <Link
-            href="/onboarding"
-            className="flex items-center space-x-2 px-3 py-2 rounded-lg border border-dashed border-primary/40 text-primary text-sm hover:bg-primary/5 transition-colors"
+            href="/store"
+            className="h-10 w-10 shrink-0 inline-flex items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-600 hover:text-on-surface hover:bg-slate-100 transition-colors"
+            aria-label="Back to stores"
+            title="Back to stores"
           >
-            <span className="material-symbols-outlined text-[18px]">add_business</span>
-            <span className="font-medium">Create a store</span>
+            <span className="material-symbols-outlined text-[18px]">arrow_back</span>
           </Link>
-        ) : (
-          <div className="relative">
-            <select
-              value={activeStoreId || ""}
-              onChange={(e) => switchStoreAndNavigate(e.target.value)}
-              className="w-full appearance-none bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-on-surface font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary cursor-pointer pr-8"
-            >
-              {stores.map((s) => (
-                <option key={s.store_id} value={s.store_id}>
-                  {s.store_name}
-                </option>
-              ))}
-            </select>
-            <span className="material-symbols-outlined text-[16px] text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
-              unfold_more
-            </span>
+
+          <div className="flex-1">
+            {isLoading ? (
+              <div className="h-10 bg-slate-100 rounded-lg animate-pulse" />
+            ) : stores.length === 0 ? (
+              <Link
+                href="/onboarding"
+                className="flex items-center space-x-2 px-3 py-2 rounded-lg border border-dashed border-primary/40 text-primary text-sm hover:bg-primary/5 transition-colors"
+              >
+                <span className="material-symbols-outlined text-[18px]">add_business</span>
+                <span className="font-medium">Create a store</span>
+              </Link>
+            ) : (
+              <div className="relative">
+                <select
+                  value={activeStoreId || ""}
+                  onChange={(e) => switchStoreAndNavigate(e.target.value)}
+                  className="w-full appearance-none bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-on-surface font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary cursor-pointer pr-8"
+                >
+                  {stores.map((s) => (
+                    <option key={s.store_id} value={s.store_id}>
+                      {s.store_name}
+                    </option>
+                  ))}
+                </select>
+                <span className="material-symbols-outlined text-[16px] text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
+                  unfold_more
+                </span>
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
       {/* Nav Links */}
@@ -93,8 +106,8 @@ export default function Sidebar() {
               key={item.href}
               href={item.href}
               className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors text-sm ${isActive
-                  ? "text-primary font-semibold bg-primary/5"
-                  : "text-slate-600 hover:text-on-surface hover:bg-slate-50"
+                ? "text-primary font-semibold bg-primary/5"
+                : "text-slate-600 hover:text-on-surface hover:bg-slate-50"
                 }`}
             >
               <span
@@ -140,15 +153,6 @@ export default function Sidebar() {
             </div>
           </div>
         ) : null}
-
-        <a className="flex items-center space-x-3 px-3 py-2 text-slate-500 hover:text-on-surface hover:bg-slate-50 rounded-lg transition-colors text-sm cursor-pointer">
-          <span className="material-symbols-outlined text-xl">settings</span>
-          <span>Settings</span>
-        </a>
-        <a className="flex items-center space-x-3 px-3 py-2 text-slate-500 hover:text-on-surface hover:bg-slate-50 rounded-lg transition-colors text-sm cursor-pointer">
-          <span className="material-symbols-outlined text-xl">contact_support</span>
-          <span>Support</span>
-        </a>
         <button
           onClick={handleLogout}
           className="w-full flex items-center space-x-3 px-3 py-2 text-red-500 hover:bg-red-50 hover:text-red-600 transition-colors text-sm cursor-pointer rounded-lg mt-1"

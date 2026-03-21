@@ -14,7 +14,7 @@ export default async function DashboardLayout({
     <AuthProvider>
       <div className="min-h-screen">
         <Sidebar />
-        <Header />
+        {/* <Header /> */}
         <main className="ml-[280px] min-h-screen">
           <section className="pt-20 px-8 pb-8">{children}</section>
         </main>
