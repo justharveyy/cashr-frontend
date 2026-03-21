@@ -98,7 +98,6 @@ export default function MessagesPage({ params }: { params: Promise<{ store_id: s
   const [messageText, setMessageText] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [sending, setSending] = useState(false);
-  const [mounted, setMounted] = useState(false);
 
   const getToken = () => localStorage.getItem("token") || "";
 
@@ -118,10 +117,6 @@ export default function MessagesPage({ params }: { params: Promise<{ store_id: s
     }
     return true;
   };
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     activeCustomerIdRef.current = activeCustomerId;
@@ -220,7 +215,6 @@ export default function MessagesPage({ params }: { params: Promise<{ store_id: s
   }, [store_id, activeSessionId]);
 
   useEffect(() => {
-    if (!mounted) return;
     const token = getToken();
     if (!token || !API_URL) return;
 
@@ -316,7 +310,7 @@ export default function MessagesPage({ params }: { params: Promise<{ store_id: s
       socketRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mounted, store_id, activeCustomerId]);
+  }, [store_id, activeCustomerId]);
 
   useEffect(() => {
     const node = chatScrollRef.current;
@@ -469,7 +463,7 @@ export default function MessagesPage({ params }: { params: Promise<{ store_id: s
                 </div>
                 <button
                   onClick={sendMessage}
-                  disabled={!mounted || sending || (!messageText.trim() && !imageFile) || !activeCustomerId}
+                  disabled={sending || (!messageText.trim() && !imageFile) || !activeCustomerId}
                   className="bg-primary text-white px-4 py-1.5 rounded-lg font-medium text-sm flex items-center gap-2 hover:bg-primary-container transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {sending ? "Sending..." : "Send"}
@@ -535,8 +529,7 @@ export default function MessagesPage({ params }: { params: Promise<{ store_id: s
                   if (!activeCustomerId) return;
                   router.push(`/store/${store_id}/new-transaction?customer_id=${activeCustomerId}`);
                 }}
-                disabled={!mounted || !activeCustomerId}
-                className="w-full bg-primary text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-primary-container transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-primary text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-primary-container transition-colors"
               >
                 Continue to New Order
               </button>

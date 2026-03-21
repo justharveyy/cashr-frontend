@@ -9,6 +9,15 @@ interface StoreDetails {
   store_name: string;
   zalo_bot_id: string;
   zalo_bot_token: string;
+  bank?: string;
+  bank_account_number?: string;
+}
+
+interface VietQrBank {
+  bin: string;
+  code: string;
+  shortName: string;
+  name: string;
 }
 
 type ToastType = "success" | "error";
@@ -24,9 +33,15 @@ export default function DashboardPage({ params }: { params: Promise<{ store_id: 
   const [storeName, setStoreName] = useState("Your Store");
   const [zaloToken, setZaloToken] = useState("");
   const [botId, setBotId] = useState("");
+  const [bankCode, setBankCode] = useState("");
+  const [bankAccountNumber, setBankAccountNumber] = useState("");
+  const [bankOptions, setBankOptions] = useState<VietQrBank[]>([]);
+  const [loadingBanks, setLoadingBanks] = useState(false);
   const [loadingStore, setLoadingStore] = useState(true);
   const [connecting, setConnecting] = useState(false);
+  const [savingPayment, setSavingPayment] = useState(false);
   const [inlineError, setInlineError] = useState<string | null>(null);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
   const [toast, setToast] = useState<ToastState | null>(null);
   const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -67,6 +82,8 @@ export default function DashboardPage({ params }: { params: Promise<{ store_id: 
       setStoreName(store.store_name || "Your Store");
       setZaloToken(store.zalo_bot_token || "");
       setBotId(store.zalo_bot_id || "");
+      setBankCode(store.bank || "");
+      setBankAccountNumber(store.bank_account_number || "");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to load store settings.";
       setInlineError(message);
@@ -78,6 +95,40 @@ export default function DashboardPage({ params }: { params: Promise<{ store_id: 
   useEffect(() => {
     fetchStoreDetails();
   }, [fetchStoreDetails]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const fetchBanks = async () => {
+      setLoadingBanks(true);
+      try {
+        const res = await fetch("https://api.vietqr.io/v2/banks");
+        const data = await res.json();
+        if (cancelled) return;
+        const rows = Array.isArray(data?.data) ? data.data : [];
+        const normalized: VietQrBank[] = rows
+          .map((b: any) => ({
+            bin: String(b?.bin || ""),
+            code: String(b?.code || ""),
+            shortName: String(b?.shortName || b?.short_name || ""),
+            name: String(b?.name || ""),
+          }))
+          .filter((b: VietQrBank) => b.bin && (b.shortName || b.name));
+        setBankOptions(normalized);
+      } catch {
+        if (!cancelled) {
+          setBankOptions([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoadingBanks(false);
+        }
+      }
+    };
+    fetchBanks();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -128,7 +179,60 @@ export default function DashboardPage({ params }: { params: Promise<{ store_id: 
     }
   };
 
+  const handleSavePaymentQR = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const token = localStorage.getItem("token") || "";
+    const cleanedAccountNumber = bankAccountNumber.replace(/\s+/g, "");
+    const cleanedBankCode = bankCode.trim();
+
+    if (!token) {
+      const message = "Missing auth token. Please log in again.";
+      setPaymentError(message);
+      showToast("error", message);
+      return;
+    }
+
+    if (!cleanedBankCode || !cleanedAccountNumber) {
+      const message = "Bank and account number are required.";
+      setPaymentError(message);
+      showToast("error", message);
+      return;
+    }
+
+    setSavingPayment(true);
+    setPaymentError(null);
+
+    try {
+      const res = await fetch(`${API_URL}/store/manage/${store_id}/payment-qr`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token,
+        },
+        body: JSON.stringify({
+          bank: cleanedBankCode,
+          bank_account_number: cleanedAccountNumber,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || "Failed to save payment QR settings.");
+      }
+
+      setBankCode(data.payment_qr?.bank || cleanedBankCode);
+      setBankAccountNumber(data.payment_qr?.bank_account_number || cleanedAccountNumber);
+      showToast("success", "Payment QR settings saved.");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to save payment QR settings.";
+      setPaymentError(message);
+      showToast("error", message);
+    } finally {
+      setSavingPayment(false);
+    }
+  };
+
   const botConnected = !!botId;
+  const paymentQrConfigured = !!bankCode && !!bankAccountNumber;
 
   return (
     <>
@@ -220,6 +324,81 @@ export default function DashboardPage({ params }: { params: Promise<{ store_id: 
           </div>
 
           {inlineError && <p className="text-sm text-red-600">{inlineError}</p>}
+        </form>
+      </section>
+
+      {/* Payment QR Configuration */}
+      <section className="mb-6 bg-white rounded-lg p-6 border border-slate-200">
+        <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
+          <div>
+            <h3 className="text-base font-semibold text-on-surface">Payment QR Configuration</h3>
+            <p className="text-sm text-slate-500 mt-1">
+              Configure bank destination for VietQR. Customers will pay to this account.
+            </p>
+          </div>
+          <span
+            className={`inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full ${
+              paymentQrConfigured ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
+            }`}
+          >
+            <span className={`w-1.5 h-1.5 rounded-full ${paymentQrConfigured ? "bg-emerald-500" : "bg-amber-500"}`} />
+            <span>{paymentQrConfigured ? "Configured" : "Required"}</span>
+          </span>
+        </div>
+
+        <form onSubmit={handleSavePaymentQR} className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="relative">
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">
+                account_balance
+              </span>
+              <select
+                value={bankCode}
+                onChange={(e) => setBankCode(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-10 pr-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 appearance-none"
+                disabled={loadingStore || savingPayment || loadingBanks}
+              >
+                <option value="">{loadingBanks ? "Loading banks..." : "Select bank from VietQR"}</option>
+                {bankOptions.map((bank) => (
+                  <option key={bank.bin} value={bank.bin}>
+                    {bank.shortName || bank.name} ({bank.bin})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="relative">
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">
+                credit_card
+              </span>
+              <input
+                type="text"
+                value={bankAccountNumber}
+                onChange={(e) => setBankAccountNumber(e.target.value)}
+                placeholder="0904..."
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-10 pr-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30"
+                disabled={loadingStore || savingPayment}
+              />
+            </div>
+
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-xs text-slate-500">Bank list is loaded from VietQR.</p>
+
+            <button
+              type="submit"
+              disabled={loadingStore || savingPayment || !bankCode.trim() || !bankAccountNumber.trim()}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-on-primary text-sm font-medium hover:bg-primary-container transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {savingPayment && (
+                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              )}
+              <span>{savingPayment ? "Saving..." : "Save Payment QR"}</span>
+            </button>
+          </div>
+
+          {paymentError && <p className="text-sm text-red-600">{paymentError}</p>}
         </form>
       </section>
 
