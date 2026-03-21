@@ -236,7 +236,10 @@ export default function MessagesPage({ params }: { params: Promise<{ store_id: s
       ) {
         return;
       }
-      socketRef.current = new WebSocket(`${wsBase}/store/manage/${store_id}/ws?token=${encodeURIComponent(token)}`);
+      const customerQuery = activeCustomerId ? `&customer_id=${encodeURIComponent(activeCustomerId)}` : "";
+      socketRef.current = new WebSocket(
+        `${wsBase}/store/manage/${store_id}/ws?token=${encodeURIComponent(token)}${customerQuery}`
+      );
       const socket = socketRef.current;
 
       socket.onmessage = (event) => {
@@ -313,7 +316,7 @@ export default function MessagesPage({ params }: { params: Promise<{ store_id: s
       socketRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mounted, store_id]);
+  }, [mounted, store_id, activeCustomerId]);
 
   useEffect(() => {
     const node = chatScrollRef.current;
