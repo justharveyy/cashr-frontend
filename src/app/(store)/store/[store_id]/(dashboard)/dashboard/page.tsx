@@ -54,6 +54,22 @@ interface AnalyticsOrderItem {
   created_at: string;
 }
 
+interface InventoryRecommendationItem {
+  item_id: string;
+  item_name: string;
+  action: string;
+  confidence: number;
+  reason: string;
+}
+
+interface InventoryRecommendationsPayload {
+  engine: string;
+  generated_at: string;
+  recommend_stock: InventoryRecommendationItem[];
+  recommend_reduce: InventoryRecommendationItem[];
+  summary: string;
+}
+
 interface AnalyticsPayload {
   store_id: string;
   store_name: string;
@@ -66,6 +82,7 @@ interface AnalyticsPayload {
   };
   inventory_health: AnalyticsInventoryItem[];
   new_orders: AnalyticsOrderItem[];
+  inventory_recommendations?: InventoryRecommendationsPayload;
 }
 
 export default function DashboardPage({ params }: { params: Promise<{ store_id: string }> }) {
@@ -326,6 +343,7 @@ export default function DashboardPage({ params }: { params: Promise<{ store_id: 
   };
 
   const formatMoney = (value: number) => `${Math.round(value).toLocaleString("vi-VN")}₫`;
+  const inventoryRecommendations = analytics?.inventory_recommendations;
 
   return (
     <>
@@ -545,8 +563,76 @@ export default function DashboardPage({ params }: { params: Promise<{ store_id: 
           </div>
         </div>
 
+        {/* AI Inventory Recommendation */}
+        <div className="col-span-12 lg:col-span-7 bg-white rounded-lg p-6 border border-slate-200">
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h3 className="text-sm font-semibold text-on-surface">AI Inventory Recommendations</h3>
+              <p className="text-xs text-slate-500 mt-1">
+                Based on paid purchase trend and current stock coverage.
+              </p>
+            </div>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-100 bg-blue-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-blue-700">
+              <span className="material-symbols-outlined text-[14px]">auto_awesome</span>
+              {inventoryRecommendations?.engine || "purchase-pattern-v1"}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="rounded-xl border border-emerald-100 bg-emerald-50/50 p-4">
+              <h4 className="text-xs font-semibold uppercase tracking-wide text-emerald-700 mb-3">
+                Should Stock More
+              </h4>
+              <div className="space-y-3">
+                {(inventoryRecommendations?.recommend_stock || []).map((row) => (
+                  <div key={`stock-more-${row.item_id}`} className="rounded-lg border border-emerald-100 bg-white p-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm font-semibold text-slate-800">{row.item_name}</p>
+                      <span className="text-[10px] font-semibold text-emerald-700">
+                        {(row.confidence * 100).toFixed(0)}%
+                      </span>
+                    </div>
+                    <p className="mt-1 text-xs text-slate-600 leading-relaxed">{row.reason}</p>
+                  </div>
+                ))}
+                {(inventoryRecommendations?.recommend_stock || []).length === 0 && (
+                  <p className="text-sm text-slate-500">No strong stock-up candidates right now.</p>
+                )}
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-amber-100 bg-amber-50/50 p-4">
+              <h4 className="text-xs font-semibold uppercase tracking-wide text-amber-700 mb-3">
+                Should Reduce / Avoid Restock
+              </h4>
+              <div className="space-y-3">
+                {(inventoryRecommendations?.recommend_reduce || []).map((row) => (
+                  <div key={`reduce-${row.item_id}`} className="rounded-lg border border-amber-100 bg-white p-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm font-semibold text-slate-800">{row.item_name}</p>
+                      <span className="text-[10px] font-semibold text-amber-700">
+                        {(row.confidence * 100).toFixed(0)}%
+                      </span>
+                    </div>
+                    <p className="mt-1 text-xs text-slate-600 leading-relaxed">{row.reason}</p>
+                  </div>
+                ))}
+                {(inventoryRecommendations?.recommend_reduce || []).length === 0 && (
+                  <p className="text-sm text-slate-500">No strong de-stock candidates right now.</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <p className="text-[11px] text-slate-400 mt-4">
+            {inventoryRecommendations?.summary || "Recommendations update when new paid orders are recorded."}
+          </p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-12 gap-6 mb-6">
         {/* New Orders Table */}
-        <div className="col-span-12 lg:col-span-7 bg-white rounded-lg border border-slate-200">
+        <div className="col-span-12 bg-white rounded-lg border border-slate-200">
           <div className="flex justify-between items-center p-6 pb-4">
             <h3 className="text-sm font-semibold text-on-surface">New Orders</h3>
             <a className="text-primary text-xs font-medium flex items-center space-x-1 hover:underline cursor-pointer">
