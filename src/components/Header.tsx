@@ -3,7 +3,7 @@
 export default function Header() {
   return (
     <header className="fixed top-0 right-0 z-40 w-[calc(100%-280px)] bg-white flex items-center justify-between px-8 h-14 border-b border-slate-200 antialiased">
-      {/* <div className="flex items-center space-x-4">
+      <div className="flex items-center space-x-4">
         <div className="relative w-64">
           <span className="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-sm">
             search
@@ -14,10 +14,10 @@ export default function Header() {
             type="text"
           />
         </div>
-      </div> */}
+      </div>
 
       <div className="flex items-center space-x-4">
-        {/* <div className="flex items-center space-x-1 text-slate-500">
+        <div className="flex items-center space-x-1 text-slate-500">
           <button className="hover:bg-slate-100 transition-colors p-2 rounded-lg">
             <span className="material-symbols-outlined text-xl">notifications</span>
           </button>
@@ -27,7 +27,7 @@ export default function Header() {
           <button className="hover:bg-slate-100 transition-colors p-2 rounded-lg">
             <span className="material-symbols-outlined text-xl">settings</span>
           </button>
-        </div> */}
+        </div>
 
         <div className="h-8 w-[1px] bg-slate-200" />
 
