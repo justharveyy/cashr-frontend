@@ -18,13 +18,12 @@ function StepDots({ current }: { current: number }) {
       {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
         <div
           key={i}
-          className={`h-2 rounded-full transition-all duration-300 ${
-            i === current
+          className={`h-2 rounded-full transition-all duration-300 ${i === current
               ? "w-8 bg-primary"
               : i < current
-              ? "w-2 bg-primary/40"
-              : "w-2 bg-outline-variant"
-          }`}
+                ? "w-2 bg-primary/40"
+                : "w-2 bg-outline-variant"
+            }`}
         />
       ))}
     </div>
@@ -336,7 +335,7 @@ export default function OnboardingPage() {
 
   const handleFinish = () => {
     localStorage.removeItem("onboarding_store_id");
-    router.push("/transactions");
+    router.push("/store");
   };
 
   return (
