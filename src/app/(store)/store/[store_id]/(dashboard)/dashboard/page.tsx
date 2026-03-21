@@ -1,16 +1,227 @@
-export default function DashboardPage() {
+"use client";
+
+import { use, useCallback, useEffect, useRef, useState } from "react";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
+interface StoreDetails {
+  store_id: string;
+  store_name: string;
+  zalo_bot_id: string;
+  zalo_bot_token: string;
+}
+
+type ToastType = "success" | "error";
+
+interface ToastState {
+  message: string;
+  type: ToastType;
+}
+
+export default function DashboardPage({ params }: { params: Promise<{ store_id: string }> }) {
+  const { store_id } = use(params);
+
+  const [storeName, setStoreName] = useState("Your Store");
+  const [zaloToken, setZaloToken] = useState("");
+  const [botId, setBotId] = useState("");
+  const [loadingStore, setLoadingStore] = useState(true);
+  const [connecting, setConnecting] = useState(false);
+  const [inlineError, setInlineError] = useState<string | null>(null);
+  const [toast, setToast] = useState<ToastState | null>(null);
+  const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showToast = useCallback((type: ToastType, message: string) => {
+    setToast({ type, message });
+
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current);
+    }
+
+    toastTimeoutRef.current = setTimeout(() => {
+      setToast(null);
+    }, 3000);
+  }, []);
+
+  const fetchStoreDetails = useCallback(async () => {
+    const token = localStorage.getItem("token") || "";
+    if (!token) {
+      setLoadingStore(false);
+      setInlineError("Missing auth token. Please log in again.");
+      return;
+    }
+
+    setLoadingStore(true);
+    setInlineError(null);
+
+    try {
+      const res = await fetch(`${API_URL}/store/manage/${store_id}/get`, {
+        headers: { Authorization: token },
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || "Failed to load store settings.");
+      }
+
+      const store = data.store as Partial<StoreDetails>;
+      setStoreName(store.store_name || "Your Store");
+      setZaloToken(store.zalo_bot_token || "");
+      setBotId(store.zalo_bot_id || "");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to load store settings.";
+      setInlineError(message);
+    } finally {
+      setLoadingStore(false);
+    }
+  }, [store_id]);
+
+  useEffect(() => {
+    fetchStoreDetails();
+  }, [fetchStoreDetails]);
+
+  useEffect(() => {
+    return () => {
+      if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+    };
+  }, []);
+
+  const handleConnect = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const token = localStorage.getItem("token") || "";
+    const trimmedToken = zaloToken.trim();
+
+    if (!token) {
+      const message = "Missing auth token. Please log in again.";
+      setInlineError(message);
+      showToast("error", message);
+      return;
+    }
+
+    if (!trimmedToken || connecting) return;
+
+    setConnecting(true);
+    setInlineError(null);
+
+    try {
+      const res = await fetch(`${API_URL}/store/manage/${store_id}/zalobot-key`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token,
+        },
+        body: JSON.stringify({ zalo_bot_token: trimmedToken }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || "Failed to connect Zalo bot.");
+      }
+
+      showToast("success", "Zalo Bot configured successfully.");
+      await fetchStoreDetails();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to connect Zalo bot.";
+      setInlineError(message);
+      showToast("error", message);
+    } finally {
+      setConnecting(false);
+    }
+  };
+
+  const botConnected = !!botId;
+
   return (
     <>
+      {toast && (
+        <div className="fixed top-20 right-8 z-[60]">
+          <div
+            className={`min-w-[280px] max-w-sm rounded-lg border px-4 py-3 shadow-lg ${
+              toast.type === "success"
+                ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+                : "bg-red-50 border-red-200 text-red-800"
+            }`}
+            role="status"
+            aria-live="polite"
+          >
+            <div className="flex items-start gap-2">
+              <span className="material-symbols-outlined text-[18px] mt-0.5">
+                {toast.type === "success" ? "check_circle" : "error"}
+              </span>
+              <p className="text-sm font-medium leading-snug">{toast.message}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="mb-8">
-        <h2 className="text-2xl font-bold text-on-surface mb-1">
-          Good morning, Thanh Nam
-        </h2>
+        <h2 className="text-2xl font-bold text-on-surface mb-1">{storeName} Dashboard</h2>
         <p className="text-slate-500 text-sm">
           Your business performance is up by{" "}
           <span className="text-emerald-600 font-medium">12.4%</span> this week.
         </p>
       </div>
+
+      {/* Zalo Bot Configuration */}
+      <section className="mb-6 bg-white rounded-lg p-6 border border-slate-200">
+        <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
+          <div>
+            <h3 className="text-base font-semibold text-on-surface">Zalo Bot Configuration</h3>
+            <p className="text-sm text-slate-500 mt-1">
+              Paste your Zalo bot token and connect it to this store.
+            </p>
+          </div>
+          <span
+            className={`inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full ${
+              botConnected ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-600"
+            }`}
+          >
+            <span className={`w-1.5 h-1.5 rounded-full ${botConnected ? "bg-emerald-500" : "bg-slate-400"}`} />
+            <span>{botConnected ? "Connected" : "Not connected"}</span>
+          </span>
+        </div>
+
+        <form onSubmit={handleConnect} className="space-y-3">
+          <div className="relative">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">
+              key
+            </span>
+            <input
+              type="text"
+              value={zaloToken}
+              onChange={(e) => setZaloToken(e.target.value)}
+              placeholder="AABBCCDD:xxxxxxxxxxxxxxxxxxxxxxxx"
+              className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-10 pr-4 py-2.5 text-sm font-mono outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30"
+              disabled={loadingStore || connecting}
+            />
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="text-sm text-slate-600">
+              {botConnected ? (
+                <span>
+                  Bot ID: <span className="font-mono text-xs text-slate-500">{botId}</span>
+                </span>
+              ) : (
+                <span>No bot connected yet.</span>
+              )}
+            </div>
+
+            <button
+              type="submit"
+              disabled={loadingStore || connecting || !zaloToken.trim()}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-on-primary text-sm font-medium hover:bg-primary-container transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {connecting && (
+                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              )}
+              <span>{connecting ? "Connecting..." : "Connect"}</span>
+            </button>
+          </div>
+
+          {inlineError && <p className="text-sm text-red-600">{inlineError}</p>}
+        </form>
+      </section>
 
       {/* Stats Row */}
       <div className="grid grid-cols-12 gap-6 mb-6">
