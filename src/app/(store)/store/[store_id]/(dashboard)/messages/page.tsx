@@ -4,7 +4,6 @@ import { use, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
-const POLL_INTERVAL_MS = 3000;
 
 interface CustomerItem {
   customer_id: string;
@@ -201,14 +200,59 @@ export default function MessagesPage({ params }: { params: Promise<{ store_id: s
 
   useEffect(() => {
     if (!mounted) return;
+    const token = getToken();
+    if (!token || !API_URL) return;
 
-    const interval = setInterval(() => {
-      loadCustomers();
-      loadSessions(activeCustomerId, true);
-      loadChats();
-    }, POLL_INTERVAL_MS);
+    const wsBase = API_URL
+      .replace(/^http:\/\//, "ws://")
+      .replace(/^https:\/\//, "wss://");
+    let stopped = false;
+    let socket: WebSocket | null = null;
+    let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
-    return () => clearInterval(interval);
+    const connect = () => {
+      if (stopped) return;
+      socket = new WebSocket(`${wsBase}/store/manage/${store_id}/ws?token=${encodeURIComponent(token)}`);
+
+      socket.onmessage = (event) => {
+        let payload: {
+          type?: string;
+          customer_id?: string;
+          session_id?: string;
+        } = {};
+        try {
+          payload = JSON.parse(event.data);
+        } catch {
+          return;
+        }
+
+        if (payload.type !== "chat.updated") return;
+
+        loadCustomers();
+
+        if (payload.customer_id && payload.customer_id === activeCustomerId) {
+          loadSessions(activeCustomerId, true);
+          if (!payload.session_id || payload.session_id === activeSessionId) {
+            loadChats();
+          }
+        }
+      };
+
+      socket.onclose = () => {
+        if (stopped) return;
+        reconnectTimer = setTimeout(connect, 1500);
+      };
+    };
+
+    connect();
+
+    return () => {
+      stopped = true;
+      if (reconnectTimer) clearTimeout(reconnectTimer);
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.close();
+      }
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mounted, store_id, activeCustomerId, activeSessionId]);
 
