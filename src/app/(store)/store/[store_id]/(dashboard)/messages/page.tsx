@@ -1,9 +1,9 @@
 "use client";
 
-import { use, useEffect, useMemo, useRef, useState } from "react";
+import { use, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 interface CustomerItem {
   customer_id: string;
@@ -14,6 +14,7 @@ interface CustomerItem {
   email: string | null;
   last_message: string | null;
   last_message_at: string | null;
+  needs_human_in_loop: boolean;
 }
 
 interface SessionItem {
@@ -29,15 +30,6 @@ interface ChatItem {
   role: "user" | "assistant";
   content: string;
   created_at: string | null;
-}
-
-interface ChatUpdatedEvent {
-  type: "chat.updated";
-  store_id: string;
-  customer_id: string;
-  session_id: string;
-  chat: ChatItem;
-  source?: string;
 }
 
 function initials(name: string | null) {
@@ -73,6 +65,7 @@ export default function MessagesPage({ params }: { params: Promise<{ store_id: s
   const router = useRouter();
   const searchParams = useSearchParams();
   const preselectedCustomerId = searchParams.get("customer_id") || null;
+  const [hasAppliedPreselected, setHasAppliedPreselected] = useState(false);
 
   const [customers, setCustomers] = useState<CustomerItem[]>([]);
   const [loadingCustomers, setLoadingCustomers] = useState(true);
@@ -90,16 +83,17 @@ export default function MessagesPage({ params }: { params: Promise<{ store_id: s
   const [loadingChats, setLoadingChats] = useState(false);
   const chatScrollRef = useRef<HTMLDivElement | null>(null);
   const shouldAutoScrollRef = useRef(true);
-  const socketRef = useRef<WebSocket | null>(null);
-  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const activeCustomerIdRef = useRef<string | null>(null);
-  const activeSessionIdRef = useRef<string | null>(null);
 
   const [messageText, setMessageText] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [sending, setSending] = useState(false);
+  const [togglingHandoff, setTogglingHandoff] = useState(false);
 
   const getToken = () => localStorage.getItem("token") || "";
+
+  useEffect(() => {
+    setHasAppliedPreselected(false);
+  }, [preselectedCustomerId, store_id]);
 
   const sameChats = (a: ChatItem[], b: ChatItem[]) => {
     if (a.length !== b.length) return false;
@@ -118,44 +112,52 @@ export default function MessagesPage({ params }: { params: Promise<{ store_id: s
     return true;
   };
 
-  useEffect(() => {
-    activeCustomerIdRef.current = activeCustomerId;
-  }, [activeCustomerId]);
-
-  useEffect(() => {
-    activeSessionIdRef.current = activeSessionId;
-  }, [activeSessionId]);
-
-  const loadCustomers = async () => {
+  const loadCustomers = useCallback(async (showLoader = false) => {
     const token = getToken();
     if (!token) {
       setLoadingCustomers(false);
       return;
     }
 
-    setLoadingCustomers(true);
+    if (showLoader) setLoadingCustomers(true);
     try {
       const res = await fetch(`${API_URL}/store/manage/${store_id}/customers?page=1&per_page=50`, {
         headers: { Authorization: token },
       });
       const data = await res.json();
-      if (data.success) {
-        const rows: CustomerItem[] = data.items ?? [];
-        setCustomers(rows);
-        if (rows.length > 0) {
-          if (preselectedCustomerId && rows.some((row) => row.user_id === preselectedCustomerId)) {
-            setActiveCustomerId(preselectedCustomerId);
-          } else if (!activeCustomerId) {
-            setActiveCustomerId(rows[0].user_id);
-          }
-        }
-      }
-    } finally {
-      setLoadingCustomers(false);
-    }
-  };
+      if (!data.success) return;
 
-  const loadSessions = async (customerId: string | null, keepCurrentSelection = false) => {
+      const rows: CustomerItem[] = [...(data.items ?? [])].sort((a, b) => {
+        const left = a.last_message_at ? new Date(a.last_message_at).getTime() : 0;
+        const right = b.last_message_at ? new Date(b.last_message_at).getTime() : 0;
+        return right - left;
+      });
+      setCustomers(rows);
+      if (rows.length === 0) {
+        setActiveCustomerId(null);
+        return;
+      }
+
+      if (!hasAppliedPreselected && preselectedCustomerId && rows.some((row) => row.user_id === preselectedCustomerId)) {
+        setActiveCustomerId(preselectedCustomerId);
+        setHasAppliedPreselected(true);
+        return;
+      }
+
+      if (!hasAppliedPreselected) {
+        setHasAppliedPreselected(true);
+      }
+
+      setActiveCustomerId((prev) => {
+        if (prev && rows.some((row) => row.user_id === prev)) return prev;
+        return rows[0].user_id;
+      });
+    } finally {
+      if (showLoader) setLoadingCustomers(false);
+    }
+  }, [hasAppliedPreselected, preselectedCustomerId, store_id]);
+
+  const loadSessions = useCallback(async (customerId: string | null, keepCurrentSelection = false) => {
     const token = getToken();
     if (!token || !customerId) {
       setSessions([]);
@@ -175,26 +177,16 @@ export default function MessagesPage({ params }: { params: Promise<{ store_id: s
       if (keepCurrentSelection && prev && rows.some((s) => s.session_id === prev)) return prev;
       return rows.length > 0 ? rows[0].session_id : null;
     });
-  };
+  }, [store_id]);
 
-  useEffect(() => {
-    loadCustomers();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [store_id, preselectedCustomerId]);
-
-  useEffect(() => {
-    loadSessions(activeCustomerId, true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [store_id, activeCustomerId]);
-
-  const loadChats = async () => {
+  const loadChats = useCallback(async (showLoader = false) => {
     const token = getToken();
     if (!token || !activeSessionId) {
       setChats([]);
       return;
     }
 
-    setLoadingChats(true);
+    if (showLoader) setLoadingChats(true);
     try {
       const res = await fetch(`${API_URL}/store/manage/${store_id}/sessions/${activeSessionId}/chats?page=1&per_page=100`, {
         headers: { Authorization: token },
@@ -205,112 +197,66 @@ export default function MessagesPage({ params }: { params: Promise<{ store_id: s
         setChats((prev) => (sameChats(prev, rows) ? prev : rows));
       }
     } finally {
-      setLoadingChats(false);
+      if (showLoader) setLoadingChats(false);
     }
-  };
+  }, [activeSessionId, store_id]);
 
-  useEffect(() => {
-    loadChats();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [store_id, activeSessionId]);
-
-  useEffect(() => {
+  const markNotificationsReadForCustomer = useCallback(async (customerId: string) => {
     const token = getToken();
-    if (!token || !API_URL) return;
+    if (!token) return;
+    try {
+      await fetch(`${API_URL}/store/manage/${store_id}/notifications/read`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token,
+        },
+        body: JSON.stringify({ customer_id: customerId }),
+      });
+    } catch {
+      // no-op
+    }
+  }, [store_id]);
 
-    const wsBase = API_URL
-      .replace(/^http:\/\//, "ws://")
-      .replace(/^https:\/\//, "wss://");
-    let stopped = false;
-    const connect = () => {
-      if (stopped) return;
-      if (
-        socketRef.current &&
-        (socketRef.current.readyState === WebSocket.OPEN || socketRef.current.readyState === WebSocket.CONNECTING)
-      ) {
-        return;
-      }
-      const customerQuery = activeCustomerId ? `&customer_id=${encodeURIComponent(activeCustomerId)}` : "";
-      socketRef.current = new WebSocket(
-        `${wsBase}/store/manage/${store_id}/ws?token=${encodeURIComponent(token)}${customerQuery}`
-      );
-      const socket = socketRef.current;
+  useEffect(() => {
+    loadCustomers(true);
+  }, [loadCustomers]);
 
-      socket.onmessage = (event) => {
-        let payload: ChatUpdatedEvent | { type?: string } = {};
-        try {
-          payload = JSON.parse(event.data);
-        } catch {
-          return;
-        }
+  useEffect(() => {
+    const interval = setInterval(() => {
+      loadCustomers(false);
+    }, 6000);
+    return () => clearInterval(interval);
+  }, [loadCustomers]);
 
-        if (payload.type !== "chat.updated") return;
+  useEffect(() => {
+    loadSessions(activeCustomerId, true);
+  }, [activeCustomerId, loadSessions]);
 
-        const chatEvent = payload as ChatUpdatedEvent;
+  useEffect(() => {
+    if (!activeCustomerId) return;
+    const interval = setInterval(() => {
+      loadSessions(activeCustomerId, true);
+    }, 7000);
+    return () => clearInterval(interval);
+  }, [activeCustomerId, loadSessions]);
 
-        setCustomers((prev) => {
-          const idx = prev.findIndex((c) => c.user_id === chatEvent.customer_id);
-          if (idx === -1) return prev;
+  useEffect(() => {
+    loadChats(true);
+  }, [loadChats]);
 
-          const next = [...prev];
-          const current = next[idx];
-          const updated = {
-            ...current,
-            last_message: chatEvent.chat.content,
-            last_message_at: chatEvent.chat.created_at,
-          };
-          next[idx] = updated;
+  useEffect(() => {
+    if (!activeSessionId) return;
+    const interval = setInterval(() => {
+      loadChats(false);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [activeSessionId, loadChats]);
 
-          if (idx > 0) {
-            next.splice(idx, 1);
-            next.unshift(updated);
-          }
-          return next;
-        });
-
-        if (!activeCustomerIdRef.current) {
-          setActiveCustomerId(chatEvent.customer_id);
-        }
-
-        if (
-          chatEvent.customer_id === activeCustomerIdRef.current &&
-          chatEvent.session_id === activeSessionIdRef.current
-        ) {
-          setChats((prev) => {
-            const exists = prev.some(
-              (c) =>
-                c.chat_id === chatEvent.chat.chat_id &&
-                c.role === chatEvent.chat.role &&
-                c.content === chatEvent.chat.content &&
-                c.created_at === chatEvent.chat.created_at
-            );
-            if (exists) return prev;
-            return [...prev, chatEvent.chat];
-          });
-        }
-      };
-
-      socket.onclose = () => {
-        if (stopped) return;
-        reconnectTimerRef.current = setTimeout(connect, 1500);
-      };
-    };
-
-    connect();
-
-    return () => {
-      stopped = true;
-      if (reconnectTimerRef.current) {
-        clearTimeout(reconnectTimerRef.current);
-        reconnectTimerRef.current = null;
-      }
-      if (socketRef.current && socketRef.current.readyState !== WebSocket.CLOSED) {
-        socketRef.current.close();
-      }
-      socketRef.current = null;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [store_id, activeCustomerId]);
+  useEffect(() => {
+    if (!activeCustomerId) return;
+    markNotificationsReadForCustomer(activeCustomerId);
+  }, [activeCustomerId, markNotificationsReadForCustomer]);
 
   useEffect(() => {
     const node = chatScrollRef.current;
@@ -347,9 +293,43 @@ export default function MessagesPage({ params }: { params: Promise<{ store_id: s
       if (data.success) {
         setMessageText("");
         setImageFile(null);
+        await loadCustomers(false);
+        await loadSessions(activeCustomerId, true);
+        await loadChats(false);
       }
     } finally {
       setSending(false);
+    }
+  };
+
+  const toggleHumanInLoop = async () => {
+    if (!activeCustomer || togglingHandoff) return;
+    const token = getToken();
+    if (!token) return;
+
+    const nextEnabled = !activeCustomer.needs_human_in_loop;
+    setTogglingHandoff(true);
+    try {
+      const res = await fetch(`${API_URL}/store/manage/${store_id}/customers/${activeCustomer.user_id}/human-in-loop`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token,
+        },
+        body: JSON.stringify({ enabled: nextEnabled }),
+      });
+      const data = await res.json();
+      if (!data.success) return;
+
+      setCustomers((prev) =>
+        prev.map((customer) =>
+          customer.user_id === activeCustomer.user_id
+            ? { ...customer, needs_human_in_loop: nextEnabled }
+            : customer
+        )
+      );
+    } finally {
+      setTogglingHandoff(false);
     }
   };
 
@@ -383,7 +363,14 @@ export default function MessagesPage({ params }: { params: Promise<{ store_id: s
                       <span className="text-[10px] text-slate-400">{formatTime(c.last_message_at)}</span>
                     </div>
                     <p className="text-xs text-slate-500 line-clamp-1 mb-1">{c.last_message || "No messages yet"}</p>
-                    <span className="text-[10px] text-slate-400">{c.phone_number || c.user_id}</span>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] text-slate-400">{c.phone_number || c.user_id}</span>
+                      {c.needs_human_in_loop && (
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 font-medium">
+                          Human-in-loop
+                        </span>
+                      )}
+                    </div>
                   </button>
                 );
               })
@@ -402,7 +389,26 @@ export default function MessagesPage({ params }: { params: Promise<{ store_id: s
                 <div className="text-[10px] text-slate-400">{activeCustomer?.phone_number || activeCustomer?.user_id || ""}</div>
               </div>
             </div>
-            <div className="text-[10px] text-slate-400">{sessions.length} session(s)</div>
+            <div className="flex items-center gap-3">
+              {activeCustomer && (
+                <button
+                  onClick={toggleHumanInLoop}
+                  disabled={togglingHandoff}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                    activeCustomer.needs_human_in_loop
+                      ? "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100"
+                      : "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
+                  } disabled:opacity-60 disabled:cursor-not-allowed`}
+                >
+                  {togglingHandoff
+                    ? "Updating..."
+                    : activeCustomer.needs_human_in_loop
+                      ? "Human-in-loop ON"
+                      : "AI Auto-reply ON"}
+                </button>
+              )}
+              <div className="text-[10px] text-slate-400">{sessions.length} session(s)</div>
+            </div>
           </div>
 
           <div ref={chatScrollRef} onScroll={onChatScroll} className="flex-grow overflow-y-auto p-6 space-y-4">
@@ -494,6 +500,16 @@ export default function MessagesPage({ params }: { params: Promise<{ store_id: s
                 <p className="text-[10px] text-slate-400 uppercase">User ID</p>
                 <p className="font-mono text-xs text-slate-600">{activeCustomer?.user_id || "-"}</p>
               </div>
+              <div>
+                <p className="text-[10px] text-slate-400 uppercase">Support Mode</p>
+                <p className="font-medium text-on-surface">
+                  {activeCustomer
+                    ? activeCustomer.needs_human_in_loop
+                      ? "Human-in-loop"
+                      : "AI auto-reply"
+                    : "-"}
+                </p>
+              </div>
             </div>
 
             <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mt-8 mb-3">Sessions</h4>
@@ -529,7 +545,8 @@ export default function MessagesPage({ params }: { params: Promise<{ store_id: s
                   if (!activeCustomerId) return;
                   router.push(`/store/${store_id}/new-transaction?customer_id=${activeCustomerId}`);
                 }}
-                className="w-full bg-primary text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-primary-container transition-colors"
+                disabled={!activeCustomerId}
+                className="w-full bg-primary text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-primary-container transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Continue to New Order
               </button>
