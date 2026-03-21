@@ -11,10 +11,13 @@ function VerifyKycContent() {
 
   useEffect(() => {
     const errorParam = searchParams.get("error");
+    const successParam = searchParams.get("success");
     if (errorParam) {
       setError(errorParam);
+    } else if (successParam === "1" || successParam === "true") {
+      router.push("/store");
     } else {
-      router.push("/transactions");
+      router.push("/store");
     }
   }, [searchParams, router]);
 

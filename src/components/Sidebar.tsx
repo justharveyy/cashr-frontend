@@ -123,7 +123,7 @@ export default function Sidebar() {
       </nav>
 
       {/* New Transaction CTA */}
-
+9i
       {/* User Profile + Footer Links */}
       <div className="pt-4 mt-4 border-t border-slate-100 space-y-0.5">
         {/* User info */}
