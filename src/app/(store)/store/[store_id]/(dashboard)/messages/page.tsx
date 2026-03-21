@@ -4,6 +4,7 @@ import { use, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const POLL_INTERVAL_MS = 3000;
 
 interface CustomerItem {
   customer_id: string;
@@ -121,30 +122,36 @@ export default function MessagesPage({ params }: { params: Promise<{ store_id: s
     }
   };
 
+  const loadSessions = async (customerId: string | null, keepCurrentSelection = false) => {
+    const token = getToken();
+    if (!token || !customerId) {
+      setSessions([]);
+      setActiveSessionId(null);
+      return;
+    }
+
+    const res = await fetch(`${API_URL}/store/manage/${store_id}/customers/${customerId}/sessions?page=1&per_page=20`, {
+      headers: { Authorization: token },
+    });
+    const data = await res.json();
+    if (!data.success) return;
+
+    const rows: SessionItem[] = data.items ?? [];
+    setSessions(rows);
+    setActiveSessionId((prev) => {
+      if (keepCurrentSelection && prev && rows.some((s) => s.session_id === prev)) return prev;
+      return rows.length > 0 ? rows[0].session_id : null;
+    });
+  };
+
   useEffect(() => {
     loadCustomers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [store_id, preselectedCustomerId]);
 
   useEffect(() => {
-    const token = getToken();
-    if (!token || !activeCustomerId) {
-      setSessions([]);
-      setActiveSessionId(null);
-      return;
-    }
-
-    fetch(`${API_URL}/store/manage/${store_id}/customers/${activeCustomerId}/sessions?page=1&per_page=20`, {
-      headers: { Authorization: token },
-    })
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.success) {
-          const rows: SessionItem[] = data.items ?? [];
-          setSessions(rows);
-          setActiveSessionId(rows.length > 0 ? rows[0].session_id : null);
-        }
-      });
+    loadSessions(activeCustomerId, true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [store_id, activeCustomerId]);
 
   const loadChats = async () => {
@@ -172,6 +179,19 @@ export default function MessagesPage({ params }: { params: Promise<{ store_id: s
     loadChats();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [store_id, activeSessionId]);
+
+  useEffect(() => {
+    if (!mounted) return;
+
+    const interval = setInterval(() => {
+      loadCustomers();
+      loadSessions(activeCustomerId, true);
+      loadChats();
+    }, POLL_INTERVAL_MS);
+
+    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mounted, store_id, activeCustomerId, activeSessionId]);
 
   useEffect(() => {
     const node = chatScrollRef.current;
