@@ -184,7 +184,23 @@ export default function NewItemPage({ params }: { params: Promise<{ store_id: st
               >
                 <span className="material-symbols-outlined">remove</span>
               </button>
-              <span className="w-16 text-center font-bold text-xl text-on-surface select-none">{stock}</span>
+              <input
+                type="number"
+                min="0"
+                value={stock}
+                onChange={(e) => {
+                  const raw = e.target.value;
+                  if (raw === "") {
+                    setStock(0);
+                    return;
+                  }
+                  const next = Number(raw);
+                  if (!Number.isFinite(next)) return;
+                  setStock(Math.max(0, Math.floor(next)));
+                }}
+                className="w-20 text-center font-bold text-xl text-on-surface bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                aria-label="Stock"
+              />
               <button
                 type="button"
                 onClick={() => setStock((s) => s + 1)}

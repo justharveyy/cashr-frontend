@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useMemo, useState } from "react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -54,13 +54,19 @@ export default function OrdersPage({ params }: { params: Promise<{ store_id: str
   const [orders, setOrders] = useState<Order[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "paid" | "cancelled">("all");
+  const [dayFilter, setDayFilter] = useState<"all" | "today" | "7d" | "30d" | "custom">("all");
+  const [customDate, setCustomDate] = useState("");
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) return;
 
     const fetchOrders = () => {
-      fetch(`${API_URL}/pay2s/store/${store_id}/orders?per_page=100`, {
+      fetch(`${API_URL}/pay2s/store/${store_id}/orders?per_page=1000`, {
         headers: { Authorization: token },
       })
         .then((r) => r.json())
@@ -81,6 +87,59 @@ export default function OrdersPage({ params }: { params: Promise<{ store_id: str
   const pending   = orders.filter((o) => o.status === "pending");
   const paid      = orders.filter((o) => o.status === "paid");
   const netRevenue = paid.reduce((s, o) => s + o.total_amount, 0);
+
+  const filteredOrders = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    const min = Number(minPrice);
+    const max = Number(maxPrice);
+    const hasMin = minPrice.trim() !== "" && Number.isFinite(min);
+    const hasMax = maxPrice.trim() !== "" && Number.isFinite(max);
+
+    const now = new Date();
+    const startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const start7d = new Date(now);
+    start7d.setDate(now.getDate() - 7);
+    const start30d = new Date(now);
+    start30d.setDate(now.getDate() - 30);
+
+    return orders
+      .filter((order) => {
+        if (query) {
+          const haystack = [
+            order.order_id,
+            order.buyer_name || "",
+            order.buyer_phone || "",
+            order.user || "",
+          ]
+            .join(" ")
+            .toLowerCase();
+          if (!haystack.includes(query)) return false;
+        }
+
+        if (hasMin && order.total_amount < min) return false;
+        if (hasMax && order.total_amount > max) return false;
+        if (statusFilter !== "all" && order.status !== statusFilter) return false;
+
+        const created = new Date(order.created_at);
+        if (dayFilter === "today" && created < startToday) return false;
+        if (dayFilter === "7d" && created < start7d) return false;
+        if (dayFilter === "30d" && created < start30d) return false;
+        if (dayFilter === "custom" && customDate) {
+          const target = new Date(customDate);
+          const start = new Date(target.getFullYear(), target.getMonth(), target.getDate());
+          const end = new Date(target.getFullYear(), target.getMonth(), target.getDate() + 1);
+          if (created < start || created >= end) return false;
+        }
+
+        return true;
+      })
+      .sort((a, b) => {
+        // Pending first, then newest first
+        if (a.status === "pending" && b.status !== "pending") return -1;
+        if (a.status !== "pending" && b.status === "pending") return 1;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
+  }, [orders, search, minPrice, maxPrice, statusFilter, dayFilter, customDate]);
 
   return (
     <>
@@ -140,6 +199,65 @@ export default function OrdersPage({ params }: { params: Promise<{ store_id: str
         </div>
       </section>
 
+      <section className="bg-white p-4 rounded-lg flex items-center gap-3 mb-6 border border-slate-200 flex-wrap">
+        <div className="relative flex-grow min-w-[220px] max-w-sm">
+          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
+            search
+          </span>
+          <input
+            className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary/30 outline-none"
+            placeholder="Search order ID, customer, phone..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <input
+          type="number"
+          min="0"
+          className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm w-[140px] outline-none"
+          placeholder="Min price"
+          value={minPrice}
+          onChange={(e) => setMinPrice(e.target.value)}
+        />
+        <input
+          type="number"
+          min="0"
+          className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm w-[140px] outline-none"
+          placeholder="Max price"
+          value={maxPrice}
+          onChange={(e) => setMaxPrice(e.target.value)}
+        />
+        <select
+          className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none"
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value as "all" | "pending" | "paid" | "cancelled")}
+        >
+          <option value="all">All status</option>
+          <option value="pending">Pending</option>
+          <option value="paid">Paid</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+        <select
+          className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none"
+          value={dayFilter}
+          onChange={(e) => setDayFilter(e.target.value as "all" | "today" | "7d" | "30d" | "custom")}
+        >
+          <option value="all">All days</option>
+          <option value="today">Today</option>
+          <option value="7d">Last 7 days</option>
+          <option value="30d">Last 30 days</option>
+          <option value="custom">Custom day</option>
+        </select>
+        {dayFilter === "custom" && (
+          <input
+            type="date"
+            className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none"
+            value={customDate}
+            onChange={(e) => setCustomDate(e.target.value)}
+          />
+        )}
+      </section>
+
       {/* Live / Pending Orders */}
       <div className="bg-white rounded-lg overflow-hidden border border-slate-200 mb-6">
         <div className="px-5 py-4 flex items-center justify-between border-b border-slate-100">
@@ -166,12 +284,12 @@ export default function OrdersPage({ params }: { params: Promise<{ store_id: str
             <tbody className="divide-y divide-slate-50">
               {loading ? (
                 <SkeletonRows cols={5} />
-              ) : orders.length === 0 ? (
+              ) : filteredOrders.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-5 py-10 text-center text-slate-400 text-sm">No orders yet.</td>
                 </tr>
               ) : (
-                orders.slice(0, 10).map((order) => {
+                filteredOrders.map((order) => {
                   const status = STATUS_MAP[order.status] ?? STATUS_MAP.pending;
                   return (
                     <tr key={order.order_id} className="hover:bg-slate-50 transition-colors cursor-pointer">
@@ -203,7 +321,7 @@ export default function OrdersPage({ params }: { params: Promise<{ store_id: str
           </table>
         </div>
         <div className="px-5 py-3 border-t border-slate-100 flex items-center justify-between">
-          <p className="text-xs text-slate-400">Showing {Math.min(orders.length, 10)} of {total} orders</p>
+          <p className="text-xs text-slate-400">Showing {filteredOrders.length} of {total} orders</p>
         </div>
       </div>
     </>
