@@ -11,6 +11,15 @@ export default function Sidebar() {
 
   const activeStore = stores.find((s) => s.store_id === activeStoreId);
 
+  const switchStoreAndNavigate = (nextStoreId: string) => {
+    setActiveStoreId(nextStoreId);
+
+    // Keep user on the same dashboard section when switching stores.
+    const parts = pathname.split("/").filter(Boolean); // ["store", "{store_id}", "{section}", ...]
+    const section = parts[2] || "dashboard";
+    router.push(`/store/${nextStoreId}/${section}`);
+  };
+
   const navItems = [
     { href: `/store/${activeStoreId}/dashboard`, icon: "dashboard", label: "Dashboard" },
     { href: `/store/${activeStoreId}/orders`, icon: "shopping_cart", label: "Orders" },
@@ -56,7 +65,7 @@ export default function Sidebar() {
           <div className="relative">
             <select
               value={activeStoreId || ""}
-              onChange={(e) => setActiveStoreId(e.target.value)}
+              onChange={(e) => switchStoreAndNavigate(e.target.value)}
               className="w-full appearance-none bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-on-surface font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary cursor-pointer pr-8"
             >
               {stores.map((s) => (
