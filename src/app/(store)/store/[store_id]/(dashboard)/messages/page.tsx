@@ -81,6 +81,7 @@ export default function MessagesPage({ params }: { params: Promise<{ store_id: s
   const [chats, setChats] = useState<ChatItem[]>([]);
   const [loadingChats, setLoadingChats] = useState(false);
   const chatScrollRef = useRef<HTMLDivElement | null>(null);
+  const shouldAutoScrollRef = useRef(true);
 
   const [messageText, setMessageText] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -88,6 +89,23 @@ export default function MessagesPage({ params }: { params: Promise<{ store_id: s
   const [mounted, setMounted] = useState(false);
 
   const getToken = () => localStorage.getItem("token") || "";
+
+  const sameChats = (a: ChatItem[], b: ChatItem[]) => {
+    if (a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i += 1) {
+      const left = a[i];
+      const right = b[i];
+      if (
+        left.chat_id !== right.chat_id ||
+        left.role !== right.role ||
+        left.content !== right.content ||
+        left.created_at !== right.created_at
+      ) {
+        return false;
+      }
+    }
+    return true;
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -168,7 +186,8 @@ export default function MessagesPage({ params }: { params: Promise<{ store_id: s
       });
       const data = await res.json();
       if (data.success) {
-        setChats(data.items ?? []);
+        const rows: ChatItem[] = data.items ?? [];
+        setChats((prev) => (sameChats(prev, rows) ? prev : rows));
       }
     } finally {
       setLoadingChats(false);
@@ -196,8 +215,17 @@ export default function MessagesPage({ params }: { params: Promise<{ store_id: s
   useEffect(() => {
     const node = chatScrollRef.current;
     if (!node) return;
-    node.scrollTo({ top: node.scrollHeight, behavior: "smooth" });
-  }, [chats, loadingChats]);
+    if (shouldAutoScrollRef.current) {
+      node.scrollTo({ top: node.scrollHeight, behavior: "auto" });
+    }
+  }, [chats]);
+
+  const onChatScroll = () => {
+    const node = chatScrollRef.current;
+    if (!node) return;
+    const distanceFromBottom = node.scrollHeight - node.scrollTop - node.clientHeight;
+    shouldAutoScrollRef.current = distanceFromBottom < 80;
+  };
 
   const sendMessage = async () => {
     const token = getToken();
@@ -278,7 +306,7 @@ export default function MessagesPage({ params }: { params: Promise<{ store_id: s
             <div className="text-[10px] text-slate-400">{sessions.length} session(s)</div>
           </div>
 
-          <div ref={chatScrollRef} className="flex-grow overflow-y-auto p-6 space-y-4">
+          <div ref={chatScrollRef} onScroll={onChatScroll} className="flex-grow overflow-y-auto p-6 space-y-4">
             {activeSessionId && (
               <div className="flex justify-center">
                 <span className="px-3 py-1 bg-slate-100 rounded-lg text-[10px] font-medium text-slate-400">
