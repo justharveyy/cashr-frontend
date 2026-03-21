@@ -31,6 +31,15 @@ interface ChatItem {
   created_at: string | null;
 }
 
+interface ChatUpdatedEvent {
+  type: "chat.updated";
+  store_id: string;
+  customer_id: string;
+  session_id: string;
+  chat: ChatItem;
+  source?: string;
+}
+
 function initials(name: string | null) {
   if (!name) return "?";
   return name
@@ -215,11 +224,7 @@ export default function MessagesPage({ params }: { params: Promise<{ store_id: s
       socket = new WebSocket(`${wsBase}/store/manage/${store_id}/ws?token=${encodeURIComponent(token)}`);
 
       socket.onmessage = (event) => {
-        let payload: {
-          type?: string;
-          customer_id?: string;
-          session_id?: string;
-        } = {};
+        let payload: ChatUpdatedEvent | { type?: string } = {};
         try {
           payload = JSON.parse(event.data);
         } catch {
@@ -228,13 +233,44 @@ export default function MessagesPage({ params }: { params: Promise<{ store_id: s
 
         if (payload.type !== "chat.updated") return;
 
-        loadCustomers();
+        const chatEvent = payload as ChatUpdatedEvent;
 
-        if (payload.customer_id && payload.customer_id === activeCustomerId) {
-          loadSessions(activeCustomerId, true);
-          if (!payload.session_id || payload.session_id === activeSessionId) {
-            loadChats();
+        setCustomers((prev) => {
+          const idx = prev.findIndex((c) => c.user_id === chatEvent.customer_id);
+          if (idx === -1) return prev;
+
+          const next = [...prev];
+          const current = next[idx];
+          const updated = {
+            ...current,
+            last_message: chatEvent.chat.content,
+            last_message_at: chatEvent.chat.created_at,
+          };
+          next[idx] = updated;
+
+          if (idx > 0) {
+            next.splice(idx, 1);
+            next.unshift(updated);
           }
+          return next;
+        });
+
+        if (!activeCustomerId) {
+          setActiveCustomerId(chatEvent.customer_id);
+        }
+
+        if (chatEvent.customer_id === activeCustomerId && chatEvent.session_id === activeSessionId) {
+          setChats((prev) => {
+            const exists = prev.some(
+              (c) =>
+                c.chat_id === chatEvent.chat.chat_id &&
+                c.role === chatEvent.chat.role &&
+                c.content === chatEvent.chat.content &&
+                c.created_at === chatEvent.chat.created_at
+            );
+            if (exists) return prev;
+            return [...prev, chatEvent.chat];
+          });
         }
       };
 
@@ -291,7 +327,6 @@ export default function MessagesPage({ params }: { params: Promise<{ store_id: s
       if (data.success) {
         setMessageText("");
         setImageFile(null);
-        await Promise.all([loadCustomers(), loadChats()]);
       }
     } finally {
       setSending(false);
