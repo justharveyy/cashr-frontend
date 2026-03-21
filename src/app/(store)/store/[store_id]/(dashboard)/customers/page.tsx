@@ -17,6 +17,7 @@ interface CustomerItem {
   last_session_id: string | null;
   last_message: string | null;
   last_message_at: string | null;
+  needs_human_in_loop?: boolean;
 }
 
 interface Pagination {
@@ -206,13 +207,20 @@ export default function CustomersPage({ params }: { params: Promise<{ store_id: 
                     </td>
                     <td className="px-5 py-3.5 text-sm text-slate-500">{c.phone_number || "-"}</td>
                     <td className="px-5 py-3.5">
-                      <span
-                        className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
-                          c.is_blocked ? "bg-red-50 text-red-700" : "bg-emerald-50 text-emerald-700"
-                        }`}
-                      >
-                        {c.is_blocked ? "Blocked" : "Active"}
-                      </span>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span
+                          className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            c.is_blocked ? "bg-red-50 text-red-700" : "bg-emerald-50 text-emerald-700"
+                          }`}
+                        >
+                          {c.is_blocked ? "Blocked" : "Active"}
+                        </span>
+                        {c.needs_human_in_loop && (
+                          <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-700">
+                            Human-in-loop
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-5 py-3.5 text-sm text-slate-500 max-w-[300px] truncate" title={c.last_message || ""}>
                       {c.last_message || "No messages"}
