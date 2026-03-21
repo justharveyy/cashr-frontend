@@ -127,11 +127,38 @@ export default function MessagesPage({ params }: { params: Promise<{ store_id: s
       const data = await res.json();
       if (!data.success) return;
 
-      const rows: CustomerItem[] = [...(data.items ?? [])].sort((a, b) => {
+      const sortRows = (items: CustomerItem[]) => [...items].sort((a, b) => {
         const left = a.last_message_at ? new Date(a.last_message_at).getTime() : 0;
         const right = b.last_message_at ? new Date(b.last_message_at).getTime() : 0;
         return right - left;
       });
+      let rows: CustomerItem[] = sortRows(data.items ?? []);
+
+      // If navigated from notifications, ensure the preselected customer is present
+      // even when it falls outside the first page.
+      if (
+        !hasAppliedPreselected &&
+        preselectedCustomerId &&
+        !rows.some((row) => row.user_id === preselectedCustomerId)
+      ) {
+        try {
+          const fallbackRes = await fetch(
+            `${API_URL}/store/manage/${store_id}/customers?page=1&per_page=1&q=${encodeURIComponent(preselectedCustomerId)}`,
+            { headers: { Authorization: token } }
+          );
+          const fallbackData = await fallbackRes.json();
+          if (fallbackData.success) {
+            const fallbackItems: CustomerItem[] = fallbackData.items ?? [];
+            const exact = fallbackItems.find((row) => row.user_id === preselectedCustomerId);
+            if (exact && !rows.some((row) => row.user_id === exact.user_id)) {
+              rows = sortRows([exact, ...rows]);
+            }
+          }
+        } catch {
+          // no-op
+        }
+      }
+
       setCustomers(rows);
       if (rows.length === 0) {
         setActiveCustomerId(null);
