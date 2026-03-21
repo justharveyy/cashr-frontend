@@ -58,11 +58,10 @@ function StoreCard({ store }: { store: StoreEntry }) {
           <div className="flex items-center space-x-2 flex-wrap gap-y-1">
             <h2 className="text-base font-bold text-on-surface truncate">{store.store_name}</h2>
             <span
-              className={`inline-flex items-center space-x-1 text-[11px] font-medium px-2 py-0.5 rounded-full ${
-                botConnected
-                  ? "bg-green-500/10 text-green-600"
-                  : "bg-slate-100 text-slate-500"
-              }`}
+              className={`inline-flex items-center space-x-1 text-[11px] font-medium px-2 py-0.5 rounded-full ${botConnected
+                ? "bg-green-500/10 text-green-600"
+                : "bg-slate-100 text-slate-500"
+                }`}
             >
               <span className={`w-1.5 h-1.5 rounded-full ${botConnected ? "bg-green-500" : "bg-slate-400"}`} />
               <span>{botConnected ? "Zalo Bot Connected" : "No Zalo Bot"}</span>
@@ -97,13 +96,13 @@ function StoreCard({ store }: { store: StoreEntry }) {
       {/* Actions */}
       <div className="px-6 pb-5 pt-2 flex items-center space-x-2">
         <Link
-          href={`/store/${store.store_id}`}
+          href={`/store/${store.store_id}/dashboard`}
           className="flex-1 text-center py-2 text-sm font-semibold text-primary bg-primary/5 hover:bg-primary/10 rounded-xl transition-colors"
         >
           Manage
         </Link>
         <Link
-          href={`/products?store=${store.store_id}`}
+          href={`/store/${store.store_id}/products`}
           className="flex-1 text-center py-2 text-sm font-medium text-slate-600 bg-slate-50 hover:bg-slate-100 rounded-xl transition-colors"
         >
           Products
@@ -149,8 +148,8 @@ export default function StorePage() {
             {isLoading
               ? "Loading..."
               : stores.length > 0
-              ? `${stores.length} store${stores.length !== 1 ? "s" : ""}`
-              : "No stores yet"}
+                ? `${stores.length} store${stores.length !== 1 ? "s" : ""}`
+                : "No stores yet"}
           </p>
         </div>
 

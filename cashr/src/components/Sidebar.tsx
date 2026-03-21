@@ -4,21 +4,21 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 
-const navItems = [
-  { href: "/dashboard", icon: "dashboard", label: "Dashboard" },
-  { href: "/orders", icon: "shopping_cart", label: "Orders" },
-  { href: "/products", icon: "inventory_2", label: "Products" },
-  { href: "/customers", icon: "group", label: "Customers" },
-  { href: "/messages", icon: "chat", label: "Messages" },
-  { href: "/transactions", icon: "receipt_long", label: "Transactions" },
-];
-
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, stores, activeStoreId, setActiveStoreId, isLoading } = useAuth();
 
   const activeStore = stores.find((s) => s.store_id === activeStoreId);
+
+  const navItems = [
+    { href: `/store/${activeStoreId}/dashboard`, icon: "dashboard", label: "Dashboard" },
+    { href: `/store/${activeStoreId}/orders`, icon: "shopping_cart", label: "Orders" },
+    { href: `/store/${activeStoreId}/products`, icon: "inventory_2", label: "Products" },
+    { href: `/store/${activeStoreId}/customers`, icon: "group", label: "Customers" },
+    { href: `/store/${activeStoreId}/messages`, icon: "chat", label: "Messages" },
+    { href: `/store/${activeStoreId}/transactions`, icon: "receipt_long", label: "Transactions" },
+  ];
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -83,11 +83,10 @@ export default function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors text-sm ${
-                isActive
+              className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors text-sm ${isActive
                   ? "text-primary font-semibold bg-primary/5"
                   : "text-slate-600 hover:text-on-surface hover:bg-slate-50"
-              }`}
+                }`}
             >
               <span
                 className="material-symbols-outlined text-xl"

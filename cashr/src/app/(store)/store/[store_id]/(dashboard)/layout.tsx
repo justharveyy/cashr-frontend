@@ -2,11 +2,14 @@ import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 import { AuthProvider } from "@/context/AuthContext";
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
+  params
 }: {
   children: React.ReactNode;
+  params: Promise<{ store_id: string }>
 }) {
+  const { store_id } = await params;
   return (
     <AuthProvider>
       <div className="min-h-screen">
