@@ -123,13 +123,6 @@ export default function Sidebar() {
       </nav>
 
       {/* New Transaction CTA */}
-      <Link
-        href="/new-transaction"
-        className="w-full py-2.5 bg-primary text-on-primary rounded-lg font-medium text-sm flex items-center justify-center space-x-2 hover:bg-primary-container transition-colors"
-      >
-        <span className="material-symbols-outlined text-sm">add</span>
-        <span>New Transaction</span>
-      </Link>
 
       {/* User Profile + Footer Links */}
       <div className="pt-4 mt-4 border-t border-slate-100 space-y-0.5">
