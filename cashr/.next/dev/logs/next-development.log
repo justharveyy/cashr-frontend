@@ -1,1 +1,65 @@
 {"timestamp":"11:02:41.283","source":"Browser","level":"ERROR","message":"unhandledRejection: TypeError: NetworkError when attempting to fetch resource."}
+{"timestamp":"11:02:46.978","source":"Server","level":"ERROR","message":"[browser] \"\\u001b[31m⨯ unhandledRejection: TypeError: NetworkError when attempting to fetch resource.\\u001b[39m\\n\\u001b[31m\\u001b[39m\""}
+{"timestamp":"11:02:46.978","source":"Browser","level":"ERROR","message":"\u001b[31m⨯ unhandledRejection: TypeError: NetworkError when attempting to fetch resource.\u001b[39m\n\u001b[31m\u001b[39m"}
+{"timestamp":"11:02:56.292","source":"Browser","level":"ERROR","message":"unhandledRejection: TypeError: NetworkError when attempting to fetch resource."}
+{"timestamp":"11:03:11.301","source":"Browser","level":"ERROR","message":"unhandledRejection: TypeError: NetworkError when attempting to fetch resource."}
+{"timestamp":"11:03:18.983","source":"Server","level":"ERROR","message":"[browser] \"\\u001b[31m⨯ unhandledRejection: TypeError: NetworkError when attempting to fetch resource.\\u001b[39m\\n\\u001b[31m\\u001b[39m\""}
+{"timestamp":"11:03:18.984","source":"Browser","level":"ERROR","message":"\u001b[31m⨯ unhandledRejection: TypeError: NetworkError when attempting to fetch resource.\u001b[39m\n\u001b[31m\u001b[39m"}
+{"timestamp":"11:03:18.984","source":"Server","level":"ERROR","message":"[browser] \"\\u001b[31m⨯ unhandledRejection: TypeError: NetworkError when attempting to fetch resource.\\u001b[39m\\n\\u001b[31m\\u001b[39m\""}
+{"timestamp":"11:03:18.984","source":"Browser","level":"ERROR","message":"\u001b[31m⨯ unhandledRejection: TypeError: NetworkError when attempting to fetch resource.\u001b[39m\n\u001b[31m\u001b[39m"}
+{"timestamp":"11:03:26.302","source":"Browser","level":"ERROR","message":"unhandledRejection: TypeError: NetworkError when attempting to fetch resource."}
+{"timestamp":"11:03:41.303","source":"Browser","level":"ERROR","message":"unhandledRejection: TypeError: NetworkError when attempting to fetch resource."}
+{"timestamp":"11:03:56.308","source":"Browser","level":"ERROR","message":"unhandledRejection: TypeError: NetworkError when attempting to fetch resource."}
+{"timestamp":"11:04:11.307","source":"Browser","level":"ERROR","message":"unhandledRejection: TypeError: NetworkError when attempting to fetch resource."}
+{"timestamp":"11:04:22.990","source":"Server","level":"ERROR","message":"[browser] \"\\u001b[31m⨯ unhandledRejection: TypeError: NetworkError when attempting to fetch resource.\\u001b[39m\\n\\u001b[31m\\u001b[39m\""}
+{"timestamp":"11:04:22.991","source":"Browser","level":"ERROR","message":"\u001b[31m⨯ unhandledRejection: TypeError: NetworkError when attempting to fetch resource.\u001b[39m\n\u001b[31m\u001b[39m"}
+{"timestamp":"11:04:22.991","source":"Server","level":"ERROR","message":"[browser] \"\\u001b[31m⨯ unhandledRejection: TypeError: NetworkError when attempting to fetch resource.\\u001b[39m\\n\\u001b[31m\\u001b[39m\""}
+{"timestamp":"11:04:22.992","source":"Browser","level":"ERROR","message":"\u001b[31m⨯ unhandledRejection: TypeError: NetworkError when attempting to fetch resource.\u001b[39m\n\u001b[31m\u001b[39m"}
+{"timestamp":"11:04:22.992","source":"Server","level":"ERROR","message":"[browser] \"\\u001b[31m⨯ unhandledRejection: TypeError: NetworkError when attempting to fetch resource.\\u001b[39m\\n\\u001b[31m\\u001b[39m\""}
+{"timestamp":"11:04:22.992","source":"Browser","level":"ERROR","message":"\u001b[31m⨯ unhandledRejection: TypeError: NetworkError when attempting to fetch resource.\u001b[39m\n\u001b[31m\u001b[39m"}
+{"timestamp":"11:04:22.992","source":"Server","level":"ERROR","message":"[browser] \"\\u001b[31m⨯ unhandledRejection: TypeError: NetworkError when attempting to fetch resource.\\u001b[39m\\n\\u001b[31m\\u001b[39m\""}
+{"timestamp":"11:04:22.992","source":"Browser","level":"ERROR","message":"\u001b[31m⨯ unhandledRejection: TypeError: NetworkError when attempting to fetch resource.\u001b[39m\n\u001b[31m\u001b[39m"}
+{"timestamp":"11:04:26.306","source":"Browser","level":"ERROR","message":"unhandledRejection: TypeError: NetworkError when attempting to fetch resource."}
+{"timestamp":"11:04:41.306","source":"Browser","level":"ERROR","message":"unhandledRejection: TypeError: NetworkError when attempting to fetch resource."}
+{"timestamp":"11:04:56.317","source":"Browser","level":"ERROR","message":"unhandledRejection: TypeError: NetworkError when attempting to fetch resource."}
+{"timestamp":"11:05:11.307","source":"Browser","level":"ERROR","message":"unhandledRejection: TypeError: NetworkError when attempting to fetch resource."}
+{"timestamp":"11:05:26.324","source":"Browser","level":"ERROR","message":"unhandledRejection: TypeError: NetworkError when attempting to fetch resource."}
+{"timestamp":"11:05:41.318","source":"Browser","level":"ERROR","message":"unhandledRejection: TypeError: NetworkError when attempting to fetch resource."}
+{"timestamp":"11:05:56.320","source":"Browser","level":"ERROR","message":"unhandledRejection: TypeError: NetworkError when attempting to fetch resource."}
+{"timestamp":"11:06:11.323","source":"Browser","level":"ERROR","message":"unhandledRejection: TypeError: NetworkError when attempting to fetch resource."}
+{"timestamp":"11:06:26.327","source":"Browser","level":"ERROR","message":"unhandledRejection: TypeError: NetworkError when attempting to fetch resource."}
+{"timestamp":"11:06:30.991","source":"Server","level":"ERROR","message":"[browser] \"\\u001b[31m⨯ unhandledRejection: TypeError: NetworkError when attempting to fetch resource.\\u001b[39m\\n\\u001b[31m\\u001b[39m\""}
+{"timestamp":"11:06:30.992","source":"Browser","level":"ERROR","message":"\u001b[31m⨯ unhandledRejection: TypeError: NetworkError when attempting to fetch resource.\u001b[39m\n\u001b[31m\u001b[39m"}
+{"timestamp":"11:06:30.994","source":"Server","level":"ERROR","message":"[browser] \"\\u001b[31m⨯ unhandledRejection: TypeError: NetworkError when attempting to fetch resource.\\u001b[39m\\n\\u001b[31m\\u001b[39m\""}
+{"timestamp":"11:06:30.995","source":"Browser","level":"ERROR","message":"\u001b[31m⨯ unhandledRejection: TypeError: NetworkError when attempting to fetch resource.\u001b[39m\n\u001b[31m\u001b[39m"}
+{"timestamp":"11:06:30.995","source":"Server","level":"ERROR","message":"[browser] \"\\u001b[31m⨯ unhandledRejection: TypeError: NetworkError when attempting to fetch resource.\\u001b[39m\\n\\u001b[31m\\u001b[39m\""}
+{"timestamp":"11:06:30.995","source":"Browser","level":"ERROR","message":"\u001b[31m⨯ unhandledRejection: TypeError: NetworkError when attempting to fetch resource.\u001b[39m\n\u001b[31m\u001b[39m"}
+{"timestamp":"11:06:30.996","source":"Server","level":"ERROR","message":"[browser] \"\\u001b[31m⨯ unhandledRejection: TypeError: NetworkError when attempting to fetch resource.\\u001b[39m\\n\\u001b[31m\\u001b[39m\""}
+{"timestamp":"11:06:30.996","source":"Browser","level":"ERROR","message":"\u001b[31m⨯ unhandledRejection: TypeError: NetworkError when attempting to fetch resource.\u001b[39m\n\u001b[31m\u001b[39m"}
+{"timestamp":"11:06:30.996","source":"Server","level":"ERROR","message":"[browser] \"\\u001b[31m⨯ unhandledRejection: TypeError: NetworkError when attempting to fetch resource.\\u001b[39m\\n\\u001b[31m\\u001b[39m\""}
+{"timestamp":"11:06:30.997","source":"Browser","level":"ERROR","message":"\u001b[31m⨯ unhandledRejection: TypeError: NetworkError when attempting to fetch resource.\u001b[39m\n\u001b[31m\u001b[39m"}
+{"timestamp":"11:06:30.997","source":"Server","level":"ERROR","message":"[browser] \"\\u001b[31m⨯ unhandledRejection: TypeError: NetworkError when attempting to fetch resource.\\u001b[39m\\n\\u001b[31m\\u001b[39m\""}
+{"timestamp":"11:06:30.997","source":"Browser","level":"ERROR","message":"\u001b[31m⨯ unhandledRejection: TypeError: NetworkError when attempting to fetch resource.\u001b[39m\n\u001b[31m\u001b[39m"}
+{"timestamp":"11:06:30.998","source":"Server","level":"ERROR","message":"[browser] \"\\u001b[31m⨯ unhandledRejection: TypeError: NetworkError when attempting to fetch resource.\\u001b[39m\\n\\u001b[31m\\u001b[39m\""}
+{"timestamp":"11:06:30.998","source":"Browser","level":"ERROR","message":"\u001b[31m⨯ unhandledRejection: TypeError: NetworkError when attempting to fetch resource.\u001b[39m\n\u001b[31m\u001b[39m"}
+{"timestamp":"11:06:30.998","source":"Server","level":"ERROR","message":"[browser] \"\\u001b[31m⨯ unhandledRejection: TypeError: NetworkError when attempting to fetch resource.\\u001b[39m\\n\\u001b[31m\\u001b[39m\""}
+{"timestamp":"11:06:30.998","source":"Browser","level":"ERROR","message":"\u001b[31m⨯ unhandledRejection: TypeError: NetworkError when attempting to fetch resource.\u001b[39m\n\u001b[31m\u001b[39m"}
+{"timestamp":"11:06:30.998","source":"Server","level":"ERROR","message":"[browser] \"\\u001b[31m⨯ unhandledRejection: TypeError: NetworkError when attempting to fetch resource.\\u001b[39m\\n\\u001b[31m\\u001b[39m\""}
+{"timestamp":"11:06:30.998","source":"Browser","level":"ERROR","message":"\u001b[31m⨯ unhandledRejection: TypeError: NetworkError when attempting to fetch resource.\u001b[39m\n\u001b[31m\u001b[39m"}
+{"timestamp":"11:06:41.326","source":"Browser","level":"ERROR","message":"unhandledRejection: TypeError: NetworkError when attempting to fetch resource."}
+{"timestamp":"11:06:56.362","source":"Browser","level":"ERROR","message":"unhandledRejection: TypeError: NetworkError when attempting to fetch resource."}
+{"timestamp":"11:07:11.346","source":"Browser","level":"ERROR","message":"unhandledRejection: TypeError: NetworkError when attempting to fetch resource."}
+{"timestamp":"11:07:26.351","source":"Browser","level":"ERROR","message":"unhandledRejection: TypeError: NetworkError when attempting to fetch resource."}
+{"timestamp":"11:08:45.599","source":"Server","level":"ERROR","message":"[browser] \"\\u001b[31m⨯ unhandledRejection: TypeError: NetworkError when attempting to fetch resource.\\u001b[39m\\n\\u001b[31m\\u001b[39m\""}
+{"timestamp":"11:08:45.600","source":"Browser","level":"ERROR","message":"\u001b[31m⨯ unhandledRejection: TypeError: NetworkError when attempting to fetch resource.\u001b[39m\n\u001b[31m\u001b[39m"}
+{"timestamp":"11:08:45.600","source":"Server","level":"ERROR","message":"[browser] \"\\u001b[31m⨯ unhandledRejection: TypeError: NetworkError when attempting to fetch resource.\\u001b[39m\\n\\u001b[31m\\u001b[39m\""}
+{"timestamp":"11:08:45.600","source":"Browser","level":"ERROR","message":"\u001b[31m⨯ unhandledRejection: TypeError: NetworkError when attempting to fetch resource.\u001b[39m\n\u001b[31m\u001b[39m"}
+{"timestamp":"11:08:45.600","source":"Server","level":"ERROR","message":"[browser] \"\\u001b[31m⨯ unhandledRejection: TypeError: NetworkError when attempting to fetch resource.\\u001b[39m\\n\\u001b[31m\\u001b[39m\""}
+{"timestamp":"11:08:45.600","source":"Browser","level":"ERROR","message":"\u001b[31m⨯ unhandledRejection: TypeError: NetworkError when attempting to fetch resource.\u001b[39m\n\u001b[31m\u001b[39m"}
+{"timestamp":"11:08:45.601","source":"Server","level":"ERROR","message":"[browser] \"\\u001b[31m⨯ unhandledRejection: TypeError: NetworkError when attempting to fetch resource.\\u001b[39m\\n\\u001b[31m\\u001b[39m\""}
+{"timestamp":"11:08:45.601","source":"Browser","level":"ERROR","message":"\u001b[31m⨯ unhandledRejection: TypeError: NetworkError when attempting to fetch resource.\u001b[39m\n\u001b[31m\u001b[39m"}
+{"timestamp":"11:10:48.963","source":"Browser","level":"ERROR","message":"Failed to fetch RSC payload for http://localhost:3000/store/78aa3d5c-7d12-495a-a493-9ca51e854bfc/messages. Falling back to browser navigation. {}"}
+{"timestamp":"11:10:48.963","source":"Browser","level":"ERROR","message":"Failed to fetch RSC payload for http://localhost:3000/store/78aa3d5c-7d12-495a-a493-9ca51e854bfc/transactions. Falling back to browser navigation. {}"}
+{"timestamp":"11:10:48.963","source":"Browser","level":"ERROR","message":"Failed to fetch RSC payload for http://localhost:3000/store/78aa3d5c-7d12-495a-a493-9ca51e854bfc/messages. Falling back to browser navigation. {}"}
+{"timestamp":"11:10:48.963","source":"Browser","level":"ERROR","message":"Failed to fetch RSC payload for http://localhost:3000/store/78aa3d5c-7d12-495a-a493-9ca51e854bfc/messages. Falling back to browser navigation. {}"}
+{"timestamp":"11:10:48.963","source":"Browser","level":"ERROR","message":"Failed to fetch RSC payload for http://localhost:3000/store/78aa3d5c-7d12-495a-a493-9ca51e854bfc/customers. Falling back to browser navigation. {}"}

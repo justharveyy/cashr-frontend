@@ -1,7 +1,7 @@
 "use client";
 
 import { use, useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -62,6 +62,8 @@ function formatDay(iso: string | null) {
 export default function MessagesPage({ params }: { params: Promise<{ store_id: string }> }) {
   const { store_id } = use(params);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const preselectedCustomerId = searchParams.get("customer_id") || null;
 
   const [customers, setCustomers] = useState<CustomerItem[]>([]);
   const [loadingCustomers, setLoadingCustomers] = useState(true);
@@ -82,8 +84,13 @@ export default function MessagesPage({ params }: { params: Promise<{ store_id: s
   const [messageText, setMessageText] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [sending, setSending] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   const getToken = () => localStorage.getItem("token") || "";
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const loadCustomers = async () => {
     const token = getToken();
@@ -101,8 +108,12 @@ export default function MessagesPage({ params }: { params: Promise<{ store_id: s
       if (data.success) {
         const rows: CustomerItem[] = data.items ?? [];
         setCustomers(rows);
-        if (!activeCustomerId && rows.length > 0) {
-          setActiveCustomerId(rows[0].user_id);
+        if (rows.length > 0) {
+          if (preselectedCustomerId && rows.some((row) => row.user_id === preselectedCustomerId)) {
+            setActiveCustomerId(preselectedCustomerId);
+          } else if (!activeCustomerId) {
+            setActiveCustomerId(rows[0].user_id);
+          }
         }
       }
     } finally {
@@ -113,7 +124,7 @@ export default function MessagesPage({ params }: { params: Promise<{ store_id: s
   useEffect(() => {
     loadCustomers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [store_id]);
+  }, [store_id, preselectedCustomerId]);
 
   useEffect(() => {
     const token = getToken();
@@ -261,10 +272,13 @@ export default function MessagesPage({ params }: { params: Promise<{ store_id: s
             ) : chats.length === 0 ? (
               <div className="text-sm text-slate-400">No messages in this session.</div>
             ) : (
-              chats.map((chat) => {
+              chats.map((chat, index) => {
                 const mine = chat.role === "assistant";
                 return (
-                  <div key={chat.chat_id} className={`flex max-w-lg ${mine ? "ml-auto justify-end" : ""}`}>
+                  <div
+                    key={`${chat.chat_id}-${chat.created_at || "no-time"}-${index}`}
+                    className={`flex max-w-lg ${mine ? "ml-auto justify-end" : ""}`}
+                  >
                     <div className={`p-3.5 rounded-lg text-sm leading-relaxed ${mine ? "bg-primary text-white rounded-tr-none" : "bg-white border border-slate-200 rounded-tl-none text-on-surface"}`}>
                       <div className="whitespace-pre-wrap">{chat.content}</div>
                       <span className={`text-[10px] mt-1.5 block ${mine ? "text-white/70" : "text-slate-400"}`}>
@@ -302,7 +316,7 @@ export default function MessagesPage({ params }: { params: Promise<{ store_id: s
                 </div>
                 <button
                   onClick={sendMessage}
-                  disabled={sending || (!messageText.trim() && !imageFile) || !activeCustomerId}
+                  disabled={!mounted || sending || (!messageText.trim() && !imageFile) || !activeCustomerId}
                   className="bg-primary text-white px-4 py-1.5 rounded-lg font-medium text-sm flex items-center gap-2 hover:bg-primary-container transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {sending ? "Sending..." : "Send"}
@@ -368,7 +382,7 @@ export default function MessagesPage({ params }: { params: Promise<{ store_id: s
                   if (!activeCustomerId) return;
                   router.push(`/store/${store_id}/new-transaction?customer_id=${activeCustomerId}`);
                 }}
-                disabled={!activeCustomerId}
+                disabled={!mounted || !activeCustomerId}
                 className="w-full bg-primary text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-primary-container transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Continue to New Order

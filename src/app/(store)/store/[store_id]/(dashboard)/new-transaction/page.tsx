@@ -1,7 +1,7 @@
 "use client";
 
 import { use, useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -40,6 +40,7 @@ function initials(name: string | null) {
 
 export default function NewTransactionPage({ params }: { params: Promise<{ store_id: string }> }) {
   const { store_id } = use(params);
+  const router = useRouter();
   const searchParams = useSearchParams();
   const preselectedCustomerId = searchParams.get("customer_id") || "";
 
@@ -172,27 +173,19 @@ export default function NewTransactionPage({ params }: { params: Promise<{ store
     setError(null);
     setSuccess(null);
 
-    const lineSummary = cartLines
-      .map((line) => `${line.item.item_name} x${line.quantity}`)
-      .join(", ");
-
-    const composedNote = [
-      note.trim(),
-      lineSummary ? `Items: ${lineSummary}` : "",
-    ]
-      .filter(Boolean)
-      .join("\n");
-
     try {
-      const res = await fetch(`${API_URL}/pay2s/store/${store_id}/customers/${selectedCustomerId}/manual-order`, {
+      const res = await fetch(`${API_URL}/pay2s/store/${store_id}/customers/${selectedCustomerId}/manual-order/send`, {
         method: "POST",
         headers: {
           Authorization: token,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          amount: subtotal,
-          note: composedNote,
+          items: cartLines.map((line) => ({
+            item_id: line.item.item_id,
+            quantity: line.quantity,
+          })),
+          note: note.trim(),
         }),
       });
       const data = await res.json();
@@ -201,9 +194,8 @@ export default function NewTransactionPage({ params }: { params: Promise<{ store
         return;
       }
 
-      setSuccess(`Created pending order ${data.order.order_id}.`);
-      setCart({});
-      setNote("");
+      setSuccess(`Created order ${data.order.order_id} and sent payment QR.`);
+      router.push(`/store/${store_id}/messages?customer_id=${selectedCustomerId}`);
     } catch {
       setError("Failed to create order.");
     } finally {
