@@ -28,40 +28,26 @@ export default function LoginPage() {
           password,
         }),
       });
-
       const data = await response.json();
-
       if (!response.ok || !data.success) {
         throw new Error(data.message || "Login failed");
       }
-
       // Store token
       if (data.token) {
         localStorage.setItem("token", data.token);
         document.cookie = `token=${data.token}; path=/; max-age=86400`;
         document.cookie = `phone_verified=${data.phone_verified}; path=/; max-age=86400`;
         document.cookie = `kyc_verified=${data.kyc_verified}; path=/; max-age=86400`;
-        
+
         // Push localstorage kyc_link to cookie if available
         const localKyc = localStorage.getItem("kyc_link");
         if (localKyc) {
-            document.cookie = `kyc_link=${localKyc}; path=/; max-age=86400`;
+          document.cookie = `kyc_link=${localKyc}; path=/; max-age=86400`;
         }
       }
 
-      if (data.phone_verified === false) {
-        console.log("Phone not verified");
-        router.push("/otp?init=resend");
-      } else if (data.kyc_verified === false) {
-        const kycLink = localStorage.getItem("kyc_link");
-        if (kycLink) {
-          window.location.href = kycLink;
-        } else {
-          router.push("/transactions");
-        }
-      } else {
-        router.push("/transactions");
-      }
+      router.push("/store");
+
     } catch (err: any) {
       setError(err.message || "An error occurred during login");
     } finally {
