@@ -90,6 +90,10 @@ export default function MessagesPage({ params }: { params: Promise<{ store_id: s
   const [loadingChats, setLoadingChats] = useState(false);
   const chatScrollRef = useRef<HTMLDivElement | null>(null);
   const shouldAutoScrollRef = useRef(true);
+  const socketRef = useRef<WebSocket | null>(null);
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const activeCustomerIdRef = useRef<string | null>(null);
+  const activeSessionIdRef = useRef<string | null>(null);
 
   const [messageText, setMessageText] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -118,6 +122,14 @@ export default function MessagesPage({ params }: { params: Promise<{ store_id: s
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    activeCustomerIdRef.current = activeCustomerId;
+  }, [activeCustomerId]);
+
+  useEffect(() => {
+    activeSessionIdRef.current = activeSessionId;
+  }, [activeSessionId]);
 
   const loadCustomers = async () => {
     const token = getToken();
@@ -216,12 +228,16 @@ export default function MessagesPage({ params }: { params: Promise<{ store_id: s
       .replace(/^http:\/\//, "ws://")
       .replace(/^https:\/\//, "wss://");
     let stopped = false;
-    let socket: WebSocket | null = null;
-    let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
-
     const connect = () => {
       if (stopped) return;
-      socket = new WebSocket(`${wsBase}/store/manage/${store_id}/ws?token=${encodeURIComponent(token)}`);
+      if (
+        socketRef.current &&
+        (socketRef.current.readyState === WebSocket.OPEN || socketRef.current.readyState === WebSocket.CONNECTING)
+      ) {
+        return;
+      }
+      socketRef.current = new WebSocket(`${wsBase}/store/manage/${store_id}/ws?token=${encodeURIComponent(token)}`);
+      const socket = socketRef.current;
 
       socket.onmessage = (event) => {
         let payload: ChatUpdatedEvent | { type?: string } = {};
@@ -255,11 +271,14 @@ export default function MessagesPage({ params }: { params: Promise<{ store_id: s
           return next;
         });
 
-        if (!activeCustomerId) {
+        if (!activeCustomerIdRef.current) {
           setActiveCustomerId(chatEvent.customer_id);
         }
 
-        if (chatEvent.customer_id === activeCustomerId && chatEvent.session_id === activeSessionId) {
+        if (
+          chatEvent.customer_id === activeCustomerIdRef.current &&
+          chatEvent.session_id === activeSessionIdRef.current
+        ) {
           setChats((prev) => {
             const exists = prev.some(
               (c) =>
@@ -276,7 +295,7 @@ export default function MessagesPage({ params }: { params: Promise<{ store_id: s
 
       socket.onclose = () => {
         if (stopped) return;
-        reconnectTimer = setTimeout(connect, 1500);
+        reconnectTimerRef.current = setTimeout(connect, 1500);
       };
     };
 
@@ -284,13 +303,17 @@ export default function MessagesPage({ params }: { params: Promise<{ store_id: s
 
     return () => {
       stopped = true;
-      if (reconnectTimer) clearTimeout(reconnectTimer);
-      if (socket && socket.readyState === WebSocket.OPEN) {
-        socket.close();
+      if (reconnectTimerRef.current) {
+        clearTimeout(reconnectTimerRef.current);
+        reconnectTimerRef.current = null;
       }
+      if (socketRef.current && socketRef.current.readyState !== WebSocket.CLOSED) {
+        socketRef.current.close();
+      }
+      socketRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mounted, store_id, activeCustomerId, activeSessionId]);
+  }, [mounted, store_id]);
 
   useEffect(() => {
     const node = chatScrollRef.current;
