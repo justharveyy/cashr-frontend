@@ -46,6 +46,9 @@ export default function ProductsPage({ params }: { params: Promise<{ store_id: s
   const [allItems, setAllItems] = useState<Item[]>([]);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "in_stock" | "low_stock" | "out_of_stock">("all");
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [busyItemId, setBusyItemId] = useState<string | null>(null);
@@ -90,10 +93,27 @@ export default function ProductsPage({ params }: { params: Promise<{ store_id: s
   }, [store_id]);
 
   const filtered = useMemo(() => {
-    if (!debouncedSearch) return allItems;
     const q = debouncedSearch.toLowerCase();
-    return allItems.filter((i) => i.item_name.toLowerCase().includes(q) || i.sku.toLowerCase().includes(q));
-  }, [allItems, debouncedSearch]);
+    const min = Number(minPrice);
+    const max = Number(maxPrice);
+    const hasMin = minPrice.trim() !== "" && Number.isFinite(min);
+    const hasMax = maxPrice.trim() !== "" && Number.isFinite(max);
+
+    return allItems.filter((i) => {
+      if (q && !(i.item_name.toLowerCase().includes(q) || i.sku.toLowerCase().includes(q))) {
+        return false;
+      }
+
+      if (statusFilter === "in_stock" && i.stock <= LOW_STOCK_THRESHOLD) return false;
+      if (statusFilter === "low_stock" && !(i.stock > 0 && i.stock <= LOW_STOCK_THRESHOLD)) return false;
+      if (statusFilter === "out_of_stock" && i.stock !== 0) return false;
+
+      if (hasMin && i.price < min) return false;
+      if (hasMax && i.price > max) return false;
+
+      return true;
+    });
+  }, [allItems, debouncedSearch, statusFilter, minPrice, maxPrice]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
   const pageItems = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
@@ -232,7 +252,7 @@ export default function ProductsPage({ params }: { params: Promise<{ store_id: s
         </div>
       </section>
 
-      <section className="bg-white p-4 rounded-lg flex items-center gap-3 mb-6 border border-slate-200">
+      <section className="bg-white p-4 rounded-lg flex items-center gap-3 mb-6 border border-slate-200 flex-wrap">
         <div className="relative flex-grow max-w-sm">
           <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
           <input
@@ -243,6 +263,32 @@ export default function ProductsPage({ params }: { params: Promise<{ store_id: s
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
+        <select
+          value={statusFilter}
+          onChange={(e) => { setStatusFilter(e.target.value as "all" | "in_stock" | "low_stock" | "out_of_stock"); setPage(1); }}
+          className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none"
+        >
+          <option value="all">All status</option>
+          <option value="in_stock">In Stock</option>
+          <option value="low_stock">Low Stock</option>
+          <option value="out_of_stock">Out of Stock</option>
+        </select>
+        <input
+          type="number"
+          min="0"
+          placeholder="Min price"
+          value={minPrice}
+          onChange={(e) => { setMinPrice(e.target.value); setPage(1); }}
+          className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm w-[130px] outline-none"
+        />
+        <input
+          type="number"
+          min="0"
+          placeholder="Max price"
+          value={maxPrice}
+          onChange={(e) => { setMaxPrice(e.target.value); setPage(1); }}
+          className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm w-[130px] outline-none"
+        />
       </section>
 
       <section className="bg-white rounded-lg overflow-hidden border border-slate-200">

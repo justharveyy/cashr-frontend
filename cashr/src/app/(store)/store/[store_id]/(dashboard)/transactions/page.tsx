@@ -107,11 +107,27 @@ export default function TransactionsPage({ params }: { params: Promise<{ store_i
   }, [transactions, search]);
 
   const totalSettled = transactions.reduce((s, t) => s + t.amount, 0);
+  const avgPayment = transactions.length > 0 ? totalSettled / transactions.length : 0;
+  const uniqueCustomers = useMemo(() => {
+    return new Set(
+      transactions.map((t) => (t.buyer_phone || t.buyer_name || t.order_id || t.tx_id).toLowerCase())
+    ).size;
+  }, [transactions]);
 
   return (
     <>
       {/* Summary */}
+             <div className="flex justify-between items-end mb-6">
+          <div>
+            <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">Financial Management</p>
+            <h2 className="text-2xl font-bold text-on-surface">Transactions</h2>
+          </div>
+    
+        </div>
       <section className="grid grid-cols-12 gap-4 items-end mb-6">
+
+         
+
         <div className="col-span-12 lg:col-span-7 bg-white rounded-lg p-6 border border-slate-200">
           <p className="text-xs text-slate-400 font-medium mb-1">Total Settled (This Page)</p>
           <h3 className="text-3xl font-bold text-on-surface mb-3">
@@ -120,21 +136,23 @@ export default function TransactionsPage({ params }: { params: Promise<{ store_i
               : <>{totalSettled.toLocaleString("vi-VN")} <span className="text-lg font-normal text-slate-400">VND</span></>
             }
           </h3>
-          <span className="inline-flex items-center gap-1 text-xs text-emerald-600 font-medium">
+          {/* <span className="inline-flex items-center gap-1 text-xs text-emerald-600 font-medium">
             <span className="material-symbols-outlined text-sm">check_circle</span>
             {pagination.total} confirmed bank payments
-          </span>
+          </span> */}
         </div>
         <div className="col-span-12 lg:col-span-5 grid grid-cols-2 gap-4">
           <div className="bg-white p-5 rounded-lg border border-slate-200">
-            <p className="text-slate-400 text-xs font-medium uppercase tracking-wider mb-2">This Page</p>
-            <p className="text-xl font-bold text-on-surface">{transactions.length}</p>
-            <p className="text-[10px] text-slate-400 mt-1">transactions</p>
+            <p className="text-slate-400 text-xs font-medium uppercase tracking-wider mb-2">Avg Payment</p>
+            <p className="text-xl font-bold text-on-surface">
+              {loading ? "—" : `${Math.round(avgPayment).toLocaleString("vi-VN")}`}
+            </p>
+            <p className="text-[10px] text-slate-400 mt-1">VND per transaction (this page)</p>
           </div>
           <div className="bg-white p-5 rounded-lg border border-slate-200">
-            <p className="text-slate-400 text-xs font-medium uppercase tracking-wider mb-2">All Time</p>
-            <p className="text-xl font-bold text-emerald-600">{pagination.total}</p>
-            <p className="text-[10px] text-slate-400 mt-1">total settled</p>
+            <p className="text-slate-400 text-xs font-medium uppercase tracking-wider mb-2">Unique Customers</p>
+            <p className="text-xl font-bold text-emerald-600">{loading ? "—" : uniqueCustomers}</p>
+            <p className="text-[10px] text-slate-400 mt-1">paid on this page</p>
           </div>
         </div>
       </section>
