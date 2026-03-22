@@ -97,21 +97,6 @@ export default function OTPPage() {
         }
     };
 
-    useEffect(() => {
-        if (typeof window !== "undefined") {
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get("init") === "resend") {
-                // Trigger auto-resend on mount because of redirection constraint
-                handleResendOTP();
-                
-                // Clean up URL to prevent loop on arbitrary refresh
-                const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
-                window.history.replaceState({ path: newUrl }, "", newUrl);
-            }
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
     return (
         <div className="min-h-screen flex items-center justify-center bg-background relative overflow-hidden">
             {/* Dynamic Background Elements */}
