@@ -14,7 +14,7 @@ function VerifyKycContent() {
     if (errorParam) {
       setError(errorParam);
     } else {
-      router.push("/transactions");
+      router.push("/store");
     }
   }, [searchParams, router]);
 

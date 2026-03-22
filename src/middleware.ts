@@ -41,7 +41,7 @@ export function middleware(request: NextRequest) {
       }
 
       // 2️⃣ KYC must be verified second → external KYC link
-      if (phoneVerified === "true" && kycLink) {
+      if (phoneVerified === "true") {
         return NextResponse.redirect(kycLink);
       }
     }
