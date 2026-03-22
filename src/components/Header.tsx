@@ -82,6 +82,35 @@ export default function Header() {
   const openNotification = (item: NotificationItem) => {
     if (!activeStoreId) return;
     setPopoverOpen(false);
+
+    if (!item.is_read) {
+      setNotifications((prev) =>
+        prev.filter((notification) => notification.notification_id !== item.notification_id)
+      );
+      setUnreadCount((prev) => Math.max(0, prev - 1));
+
+      const token = localStorage.getItem("token") || "";
+      if (token) {
+        fetch(`${API_URL}/store/manage/${activeStoreId}/notifications/read`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: token,
+          },
+          body: JSON.stringify({ notification_ids: [item.notification_id] }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data?.success && typeof data.unread_count === "number") {
+              setUnreadCount(data.unread_count);
+            }
+          })
+          .catch(() => {
+            // Keep optimistic UI and let next polling cycle reconcile.
+          });
+      }
+    }
+
     router.push(`/store/${activeStoreId}/messages?customer_id=${encodeURIComponent(item.customer_user_id)}`);
   };
 

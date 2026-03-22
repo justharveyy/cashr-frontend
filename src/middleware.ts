@@ -33,17 +33,10 @@ export function middleware(request: NextRequest) {
     // Enforce verification gate on all protected (non-public, non-verification) routes
     if (!isPublicRoute) {
       const phoneVerified = request.cookies.get("phone_verified")?.value;
-      const kycVerified = request.cookies.get("kyc_verified")?.value;
-      const kycLink = request.cookies.get("kyc_link")?.value;
 
       // 1️⃣ Phone must be verified first → OTP page (auto-triggers resend)
       if (phoneVerified === "false") {
         return NextResponse.redirect(new URL("/otp?init=resend", request.url));
-      }
-
-      // 2️⃣ KYC must be verified second → external KYC link
-      if (phoneVerified === "true" && kycVerified === "false" && kycLink) {
-        return NextResponse.redirect(kycLink);
       }
     }
   }
